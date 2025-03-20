@@ -1,7 +1,7 @@
 from random import randint
 
 class Chromosome:
-    def __init__(self, length:int, ):
+    def __init__(self, length:int):
         self.length = length
         self._generate_gens()
 

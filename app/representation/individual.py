@@ -1,7 +1,7 @@
-from chromosome import Chromosome
+from app.representation.chromosome import Chromosome
 
 class Individual:
-    def __init__(self, a: int, b:int , function, length: int, n: int) -> None:
+    def __init__(self, a: int, b:int, function, length: int, n: int) -> None:
         '''
         todo, for now n - number of func variables
         '''
@@ -11,6 +11,8 @@ class Individual:
         self.length = length
         self.n = n
         self.chromosomes = [Chromosome(length) for _ in range(n)]
+        self.decodes = self.decode()
+        self.target_function_val = self.target_function(self.decodes)
 
 
     def decode(self) -> int:
@@ -22,16 +24,13 @@ class Individual:
             all_values.append(val)
         return all_values
     
-    def target_function(self, x_values : list):
-       
+    def target_function(self, x_values:list):
         target_val = self.function(*x_values)
         return target_val
 
     def __str__(self):
-        return f"Individual with {self.n} chromosomes: {self.chromosomes}"
+        return f"Individual with {self.n} chromosomes: {self.chromosomes} target func: {self.target_function_val}"
     
 
     def __repr__(self):
-        return f"Individual with {self.n} chromosomes: {self.chromosomes}"
-
-
+        return f"Individual with {self.n} chromosomes: {self.chromosomes} target func: {self.target_function_val}"
