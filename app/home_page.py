@@ -1,42 +1,132 @@
-import tkinter as tk
-from tkinter import *
-import utils.about as U
+import customtkinter as ctk
+from app.components.labeled_entry import LabeledEntry
+from app.components.labeled_combo import LabeledComboBox
+from app.components.button import CustomButton
 
 
-class HomePage(tk.Frame):
-    def __init__(self, parent, container):
-        super().__init__(container)
+class HomePage(ctk.CTkFrame):
+    def __init__(self, master, **kwargs):
+        super().__init__(master, **kwargs)
 
-        label = tk.Label(self, text="Home Page", font=("Times", "20"))
-        label.pack(pady=0, padx=0)
+        self.layout()
 
-        ## ADD CODE HERE TO DESIGN THIS PAGE
+        # Definicje metod i ich parametrów - TODO tutaj będą buildery klas?
+        self.selection_methods = {
+            "Procent najlepszych": [("Procent najlepszych (%)", "50")],
+            "Turniejowa": [("Rozmiar turnieju", "3")],
+            "Rankingowa": [("Współczynnik selekcji", "1.5")],
+        }
 
-    def create_menubar(self, parent):
-        menubar = Menu(parent, bd=3, relief=RAISED, activebackground="#80B9DC")
+        self.crossover_methods = {
+            "Jednopunktowe": [("Punkt podziału (0-1)", "0.5")],
+            "Jednorodne": [("Prawdopodobieństwo wymiany", "0.7")],
+        }
 
-        ## Filemenu
-        filemenu = Menu(menubar, tearoff=0, relief=RAISED, activebackground="#026AA9")
-        menubar.add_cascade(label="File", menu=filemenu)
-        filemenu.add_command(
-            label="New Project", command=lambda: parent.show_frame(parent.Validation)
+        self.mutation_methods = {
+            "Brzegowa": [("Prawdopodobieństwo mutacji", "0.1")],
+            "Jednopunktowa": [("Pozycja mutacji (0-1)", "0.5")],
+        }
+
+        self.render()
+
+    def layout(self):
+        self.grid_columnconfigure(0, weight=1)
+        self.grid_columnconfigure(1, weight=2)
+        self.grid_columnconfigure(2, weight=1)
+
+        self.grid_rowconfigure(0, weight=1)
+        self.grid_rowconfigure(1, weight=1)
+        self.grid_rowconfigure(2, weight=1)
+        self.grid_rowconfigure(3, weight=1)
+        self.grid_rowconfigure(4, weight=1)
+        self.grid_rowconfigure(5, weight=1)
+
+    def render(self):
+        # Tytuł
+        self.title_label = ctk.CTkLabel(
+            self, text="Ewolucyjny Algorytm Genetyczny", font=("Arial", 20, "bold")
         )
-        filemenu.add_command(
-            label="Close", command=lambda: parent.show_frame(parent.HomePage)
+        self.title_label.grid(row=0, column=0, columnspan=3, pady=10, sticky="nsew")
+        # Selekcja
+        self.selection_select = LabeledComboBox(
+            self, "Metoda selekcji", list(self.selection_methods.keys())
         )
-        filemenu.add_separator()
-        filemenu.add_command(label="Exit", command=parent.quit)
+        self.selection_select.grid(
+            row=1, column=0, columnspan=3, padx=20, pady=5, sticky="ew"
+        )
+        self.selection_select.combobox.bind(
+            "<<ComboboxSelected>>", self.update_selection_params
+        )
 
-        ## proccessing menu
-        processing_menu = Menu(menubar, tearoff=0)
-        menubar.add_cascade(label="Validation", menu=processing_menu)
-        processing_menu.add_command(label="validate")
-        processing_menu.add_separator()
+        self.selection_frame = ctk.CTkFrame(self)
+        self.selection_frame.grid(
+            row=2, column=0, columnspan=3, padx=20, pady=5, sticky="ew"
+        )
 
-        ## help menu
-        help_menu = Menu(menubar, tearoff=0)
-        menubar.add_cascade(label="Help", menu=help_menu)
-        help_menu.add_command(label="About", command=U.about)
-        help_menu.add_separator()
+        # Krzyżowanie
+        self.crossover_select = LabeledComboBox(
+            self, "Metoda krzyżowania", list(self.crossover_methods.keys())
+        )
+        self.crossover_select.grid(
+            row=3, column=0, columnspan=3, padx=20, pady=5, sticky="ew"
+        )
+        self.crossover_select.combobox.bind(
+            "<<ComboboxSelected>>", self.update_crossover_params
+        )
 
-        return menubar
+        self.crossover_frame = ctk.CTkFrame(self)
+        self.crossover_frame.grid(
+            row=4, column=0, columnspan=3, padx=20, pady=5, sticky="ew"
+        )
+
+        # Mutacja
+        self.mutation_select = LabeledComboBox(
+            self, "Metoda mutacji", list(self.mutation_methods.keys())
+        )
+        self.mutation_select.grid(
+            row=5, column=0, columnspan=3, padx=20, pady=5, sticky="ew"
+        )
+        self.mutation_select.combobox.bind(
+            "<<ComboboxSelected>>", self.update_mutation_params
+        )
+
+        self.mutation_frame = ctk.CTkFrame(self)
+        self.mutation_frame.grid(
+            row=6, column=0, columnspan=3, padx=20, pady=5, sticky="ew"
+        )
+
+        # Przycisk startowy
+        self.start_button = CustomButton(self, "Start", command=self.start_simulation)
+        self.start_button.grid(row=7, column=1, pady=20, sticky="ew")
+
+    def update_selection_params(self, event=None):
+        self.update_params(
+            self.selection_frame,
+            self.selection_methods,
+            self.selection_select.get_value(),
+        )
+
+    def update_crossover_params(self, event=None):
+        self.update_params(
+            self.crossover_frame,
+            self.crossover_methods,
+            self.crossover_select.get_value(),
+        )
+
+    def update_mutation_params(self, event=None):
+        self.update_params(
+            self.mutation_frame, self.mutation_methods, self.mutation_select.get_value()
+        )
+
+    def update_params(self, frame, methods_dict, selected_method):
+        """Usuwa stare parametry i dodaje nowe w zależności od wyboru."""
+        for widget in frame.winfo_children():
+            widget.destroy()
+
+        if selected_method in methods_dict:
+            for label, default in methods_dict[selected_method]:
+                input_field = LabeledEntry(frame, label, default)
+                input_field.pack(pady=5, fill="x")
+
+    def start_simulation(self):
+        print("Symulacja uruchomiona!")

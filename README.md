@@ -9,3 +9,7 @@ activate
 cd ../..
 ```
 Póki co pusto tam, bo nic nie trzeba. Tkinter jest domyśłnie w Pythonie
+
+```
+pip freeze > requirements.txt
+```
