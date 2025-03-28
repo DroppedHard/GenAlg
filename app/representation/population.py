@@ -14,7 +14,6 @@ class Population:
         self.optimization_type = optimization_type
         self.population = self.create_population()
 
-
     def create_population(self):
         return [Individual(self.a, self.b, self.func, self.chrom_length, self.n_of_variables) for _ in range(self.population_size)]
     
