@@ -1,12 +1,27 @@
 import random
 from app.representation.individual import Individual
 from app.representation.population import Population
+from typing import List, Tuple
+from copy import deepcopy
 
 class Crossover:
-    def __init__(self, population: list[Individual], best_indviduals: list[Individual], whole_pop_size: int) -> None:
-        self.population: list[Individual] = population
-        self.best_indviduals: list[Individual] = best_indviduals
-        self.whole_pop_size: int = whole_pop_size
+    def __init__(self):
+        pass
+
+    @staticmethod
+    def getName() -> str:
+        pass
+
+    @staticmethod
+    def getParamteres() -> List[Tuple[str]]:
+        pass
+
+    @staticmethod
+    def validateParameters() -> bool:
+        pass
+
+    def crossover(self) -> List[Individual]:
+        pass
 
     def get_parents(self) -> None:
         self.parent1 = random.choice(self.population)
@@ -14,14 +29,12 @@ class Crossover:
         while self.parent1 == self.parent2:
             self.parent2 = random.choice(self.population)
 
-    def crossover(self):
-        raise NotImplementedError("Crossover method not implemented.")
-    
-    def crossover_population(self) -> list[Individual]:
-        size = self.whole_pop_size - len(self.best_indviduals)
+    def crossover_population(self, population: List[Individual], best_indviduals: List[Individual]) -> list[Individual]:
+        self.population = population
+
+        size = self.whole_pop_size - len(best_indviduals)
         actual_size = 0
-        new_population = [indv for indv in self.best_indviduals]
-        print(f"New population with best: {new_population}")
+        new_population = deepcopy(best_indviduals)
         while actual_size < size:
             self.get_parents()
             children = self.crossover()
@@ -31,12 +44,26 @@ class Crossover:
             for child in children:
                 new_population.append(child)
                 actual_size += 1
-                print(f"Child: {child}")
-
-        return new_population
-    
+        return new_population  
 
 class SinglePointCrossover(Crossover):
+    def __init__(self, whole_pop_size: int) -> None:
+        self.whole_pop_size = whole_pop_size
+
+    @staticmethod
+    def getName() -> str:
+        return "Krzyżowanie jednopunktowe"
+
+    @staticmethod
+    def getParamteres() -> List[Tuple[str]]:
+        return [("rozmiar populacji", "30")]
+
+    @staticmethod
+    def validateParameters(whole_pop_size: int) -> bool:
+        if whole_pop_size < 0:
+            return False
+        return True
+
     def crossover(self) -> list[Individual]:
         point = random.randint(1, self.parent1.length - 1)
         child1_chromosomes = self.parent1.chromosomes[:point] + self.parent2.chromosomes[point:]
@@ -46,6 +73,23 @@ class SinglePointCrossover(Crossover):
         return [child1, child2]
     
 class TwoPointCrossover(Crossover):
+    def __init__(self, whole_pop_size: int) -> None:
+        self.whole_pop_size = whole_pop_size
+
+    @staticmethod
+    def getName() -> str:
+        return "Krzyżowanie dwupunktowe"
+
+    @staticmethod
+    def getParamteres() -> List[Tuple[str]]:
+        return [("rozmiar populacji", "30")]
+
+    @staticmethod
+    def validateParameters(whole_pop_size) -> bool:
+        if whole_pop_size < 0:
+            return False
+        return True
+    
     def crossover(self) -> list[Individual]:
         point1 = random.randint(1, self.parent1.length - 2)
         point2 = random.randint(point1 + 1, self.parent1.length - 1)
@@ -56,11 +100,23 @@ class TwoPointCrossover(Crossover):
         return [child1, child2]
     
 class UniformCrossover(Crossover):
-    def __init__(self, population: list[Individual], best_indviduals: list[Individual], whole_pop_size: int, probability: float = 0.7) -> None:
-        super().__init__(population, best_indviduals, whole_pop_size)
+    def __init__(self, probability: float, whole_pop_size: int) -> None:
         self.probability = probability
-        if self.probability < 0 or self.probability > 1:
-            raise ValueError("Probability must be between 0 and 1")
+        self.whole_pop_size = whole_pop_size
+
+    @staticmethod
+    def getName() -> str:
+        return "Krzyżowanie jednorodne"
+
+    @staticmethod
+    def getParamteres() -> List[Tuple[str]]:
+        return [("prawdopodobieństwo", "0.5"), ("rozmiar populacji", "30")]
+
+    @staticmethod
+    def validateParameters(probability: float, whole_pop_size: int) -> bool:
+        if probability < 0 or probability > 1 or whole_pop_size < 0:
+            return False
+        return True
         
     def crossover(self) -> list[Individual]:
         child1_chromosomes = []
@@ -78,11 +134,23 @@ class UniformCrossover(Crossover):
     
 
 class DiscreteCrossover(Crossover):
-    def __init__(self, population: list[Individual], best_indviduals: list[Individual], whole_pop_size: int, probability: float = 0.5) -> None:
-        super().__init__(population, best_indviduals, whole_pop_size)
+    def __init__(self, probability: float, whole_pop_size: int) -> None:
         self.probability = probability
-        if self.probability < 0 or self.probability > 1:
-            raise ValueError("Probability must be between 0 and 1")
+        self.whole_pop_size = whole_pop_size
+
+    @staticmethod
+    def getName() -> str:
+        return "Krzyżowanie ziarniste"
+
+    @staticmethod
+    def getParamteres() -> List[Tuple[str]]:
+        return [("prawdopodobieństwo", "0.5"), ("rozmiar populacji", "30")]
+
+    @staticmethod
+    def validateParameters(probability: float, whole_pop_size: int) -> bool:
+        if probability < 0 or probability > 1 or whole_pop_size < 0:
+            return False
+        return True
         
     def crossover(self) -> list[Individual]:
         child_chromosomes = []
@@ -93,3 +161,11 @@ class DiscreteCrossover(Crossover):
                 child_chromosomes.append(self.parent2.chromosomes[i])
         child = Individual(parent = self.parent1, chromosomes=child_chromosomes)
         return [child]   
+
+
+AVAILABLE_CROSSOVERS: List[Crossover] = [
+    SinglePointCrossover,
+    TwoPointCrossover,
+    UniformCrossover,
+    DiscreteCrossover,
+]

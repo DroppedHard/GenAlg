@@ -9,6 +9,7 @@ class Simulation:
         self.epoch = 1000
         self.dest_function = lambda x: x**2
         self.limit = (-2, 2)
+        self.population_size = 100
         self.selection: Selection = selection
         self.crossover: Crossover = crossover
         self.mutation: Mutation = mutation
@@ -23,7 +24,7 @@ class Simulation:
             # evaluate
             # te poniżej to przykładowo jak to ma iść - tutaj możecie dostosować do tego co chcecie
             selected = self.selection.select(population)
-            self.crossover.crossover(selected)
+            self.crossover.crossover_population(selected)
             self.mutation.mutate()  # wiem że teraz nie zadziała - wymaga refactoringu
 
         # TODO print results
