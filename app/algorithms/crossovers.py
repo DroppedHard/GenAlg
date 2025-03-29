@@ -2,6 +2,7 @@ import random
 from app.representation.individual import Individual
 from app.representation.population import Population
 from typing import List, Tuple
+from copy import deepcopy
 
 class Crossover:
     def __init__(self):
@@ -28,13 +29,12 @@ class Crossover:
         while self.parent1 == self.parent2:
             self.parent2 = random.choice(self.population)
 
-    def crossover_population(self, population: List[Individual], best_indv: List[Individual]) -> list[Individual]:
+    def crossover_population(self, population: List[Individual], best_indviduals: List[Individual]) -> list[Individual]:
         self.population = population
-        self.best_indviduals = best_indv
 
-        size = self.whole_pop_size - len(self.best_indviduals)
+        size = self.whole_pop_size - len(best_indviduals)
         actual_size = 0
-        new_population = [indv for indv in self.best_indviduals]
+        new_population = deepcopy(best_indviduals)
         while actual_size < size:
             self.get_parents()
             children = self.crossover()
