@@ -24,7 +24,7 @@ class Population:
         self.epochs = epochs
         self.optimization_type = optimization_type
         self.best_indv_number = best_indv_number
-        self.population = self.create_population()
+        self.population = self.create_population() 
 
     def create_population(self):
         return [
