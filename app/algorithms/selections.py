@@ -2,48 +2,110 @@ from app.representation.population import Population
 from app.representation.individual import Individual
 import math
 import random
-from typing import List
+from typing import List, Tuple
 
-class Selection():
-    def __init__(self, population: Population, n_to_select: int):
-        self.population = population
-        self.n_to_select = n_to_select
-        if n_to_select < 0 or n_to_select > self.population.population_size:
-            raise ValueError("n_to_select must be between 0 and population size")
 
-    def select(self):
+class Selection:
+    def __init__(self):
         pass
 
-class SelectionTheBest(Selection):
-    def __init__(self, population: Population, n_to_select: int):
-        super().__init__(population, n_to_select)
+    @staticmethod
+    def getName() -> str:
+        pass
+
+    @staticmethod
+    def getParamteres() -> List[Tuple[str]]:
+        pass
+
+    @staticmethod
+    def validateParameters() -> bool:
+        pass
 
     def select(self) -> List[Individual]:
-        self.population.sort_population()
-        return self.population.population[:self.n_to_select]
+        pass
+
+
+class SelectionTheBest(Selection):
+    def __init__(self, percentage: int):
+        self.percentage = percentage
+
+    @staticmethod
+    def getName():
+        return "Selekcja części najlepszych"
+
+    @staticmethod
+    def getParamteres() -> List[Tuple[str]]:
+        return [("Procent najlepszych", "10")]
+
+    @staticmethod
+    def validateParameters(percentage: int) -> bool:
+        print(percentage)
+        if 0 < percentage < 100:
+            return True
+        return False
+
+    def select(self, population: list[Individual]) -> List[Individual]:
+        pass
+        # i tutaj wykonujemy to sortowanie i zwracamy top jakiś % albo top liczba - do dogadania
+        # population.sort_population()
+        # return self.population.population[: self.n_to_select]
+
 
 class TournamentSelection(Selection):
     def __init__(self, population: Population, n_to_select: int):
         super().__init__(population, n_to_select)
         self.k = math.ceil(self.population.population_size / self.n_to_select)
 
+    @staticmethod
+    def getName():
+        return "Selekcja turniejowa"
+
+    @staticmethod
+    def getParamteres() -> List[Tuple[str]]:
+        return [("Ilośc turniejów", "3"), ("Ilość osobników w grupie", "4")]
+
+    @staticmethod
+    def validateParameters(tournament_count: int, tournament_capacity: int) -> bool:
+        print(tournament_count, tournament_capacity)
+        if tournament_count < 0 or tournament_capacity < 0:
+            return False
+        return True
 
     def select(self) -> List[Individual]:
         length = self.population.population_size
         individuals = self.population.population
-        chunks = [individuals[i:i + self.k] for i in range(0, length, self.k)]
-        selected =[]
+        chunks = [individuals[i : i + self.k] for i in range(0, length, self.k)]
+        selected = []
         for chunk in chunks:
             reverse_sort = self.population.optimization_type == "max"
-            chunk = sorted(chunk, key=lambda ind: ind.target_function_val, reverse=reverse_sort)
+            chunk = sorted(
+                chunk, key=lambda ind: ind.target_function_val, reverse=reverse_sort
+            )
             selected.append(chunk[0])
         return selected
+
 
 class RouletteWheelSelection(Selection):
     def __init__(self, population: Population, n_to_select: int):
         super().__init__(population, n_to_select)
 
-    def calculate_distribution(self, target_function_vals: List[float], optimization_type: str) -> List[float]:
+    @staticmethod
+    def getName():
+        return "Selekcja koła fortuny"
+
+    @staticmethod
+    def getParamteres() -> List[Tuple[str]]:
+        return [("Jakiś parametr", "10")]
+
+    @staticmethod
+    def validateParameters(tournament_count: int, tournament_capacity: int) -> bool:
+        if tournament_count < 0 or tournament_capacity < 0:
+            return False
+        return True
+
+    def calculate_distribution(
+        self, target_function_vals: List[float], optimization_type: str
+    ) -> List[float]:
         if optimization_type == "max":
             val_sum = sum(target_function_vals)
             probability = [val / val_sum for val in target_function_vals]
@@ -52,7 +114,7 @@ class RouletteWheelSelection(Selection):
             val_sum = sum(target_function_vals)
             probability = [val / val_sum for val in target_function_vals]
 
-        distribution = [sum(probability[:i + 1]) for i in range(len(probability))]
+        distribution = [sum(probability[: i + 1]) for i in range(len(probability))]
         return distribution
 
     def select(self) -> List[Individual]:
@@ -63,9 +125,13 @@ class RouletteWheelSelection(Selection):
         epsilon = 0.0000001
 
         if minimum <= 0:
-            target_function_vals = [val + abs(minimum) + epsilon for val in target_function_vals]
+            target_function_vals = [
+                val + abs(minimum) + epsilon for val in target_function_vals
+            ]
 
-        distribution = self.calculate_distribution(target_function_vals, self.population.optimization_type)
+        distribution = self.calculate_distribution(
+            target_function_vals, self.population.optimization_type
+        )
 
         rand = random.random()
         selected_numbers = []
@@ -83,4 +149,10 @@ class RouletteWheelSelection(Selection):
                         break
 
         return selected
-        
+
+
+AVAILABLE_SELECTIONS: List[Selection] = [
+    SelectionTheBest,
+    TournamentSelection,
+    RouletteWheelSelection,
+]
