@@ -3,22 +3,24 @@ from app.representation.individual import Individual
 from app.representation.population import Population
 
 class Crossover:
-    def __init__(self, population: Population) -> None:
-        self.population: Population = population
+    def __init__(self, population: list[Individual], best_indviduals: list[Individual], whole_pop_size: int) -> None:
+        self.population: list[Individual] = population
+        self.best_indviduals: list[Individual] = best_indviduals
+        self.whole_pop_size: int = whole_pop_size
 
     def get_parents(self) -> None:
-        self.parent1 = random.choice(self.population.population)
-        self.parent2 = random.choice(self.population.population)
+        self.parent1 = random.choice(self.population)
+        self.parent2 = random.choice(self.population)
         while self.parent1 == self.parent2:
-            self.parent2 = random.choice(self.population.population)
+            self.parent2 = random.choice(self.population)
 
     def crossover(self):
         raise NotImplementedError("Crossover method not implemented.")
     
     def crossover_population(self) -> list[Individual]:
-        size = self.population.population_size - self.population.best_indv_number
+        size = self.whole_pop_size - len(self.best_indviduals)
         actual_size = 0
-        new_population = [indv for indv in self.population.get_best_individuals()]
+        new_population = [indv for indv in self.best_indviduals]
         print(f"New population with best: {new_population}")
         while actual_size < size:
             self.get_parents()
@@ -54,11 +56,17 @@ class TwoPointCrossover(Crossover):
         return [child1, child2]
     
 class UniformCrossover(Crossover):
+    def __init__(self, population: list[Individual], best_indviduals: list[Individual], whole_pop_size: int, probability: float = 0.7) -> None:
+        super().__init__(population, best_indviduals, whole_pop_size)
+        self.probability = probability
+        if self.probability < 0 or self.probability > 1:
+            raise ValueError("Probability must be between 0 and 1")
+        
     def crossover(self) -> list[Individual]:
         child1_chromosomes = []
         child2_chromosomes = []
         for i in range(self.parent1.n):
-            if random.random() < 0.7:
+            if random.random() < self.probability:
                 child1_chromosomes.append(self.parent1.chromosomes[i])
                 child2_chromosomes.append(self.parent2.chromosomes[i])
             else:
@@ -70,10 +78,16 @@ class UniformCrossover(Crossover):
     
 
 class DiscreteCrossover(Crossover):
+    def __init__(self, population: list[Individual], best_indviduals: list[Individual], whole_pop_size: int, probability: float = 0.5) -> None:
+        super().__init__(population, best_indviduals, whole_pop_size)
+        self.probability = probability
+        if self.probability < 0 or self.probability > 1:
+            raise ValueError("Probability must be between 0 and 1")
+        
     def crossover(self) -> list[Individual]:
         child_chromosomes = []
         for i in range(self.parent1.n):
-            if random.random() < 0.5:
+            if random.random() < self.probability:
                 child_chromosomes.append(self.parent1.chromosomes[i])
             else:
                 child_chromosomes.append(self.parent2.chromosomes[i])
