@@ -28,10 +28,10 @@ class Crossover:
         while self.parent1 == self.parent2:
             self.parent2 = random.choice(self.population)
 
-    def crossover_population(self, population: List[Individual], best_indv: List[Individual], whole_pop_size: int) -> list[Individual]:
+    def crossover_population(self, population: List[Individual], best_indv: List[Individual]) -> list[Individual]:
         self.population = population
         self.best_indviduals = best_indv
-        self.whole_pop_size = whole_pop_size
+
         size = self.whole_pop_size - len(self.best_indviduals)
         actual_size = 0
         new_population = [indv for indv in self.best_indviduals]
@@ -47,8 +47,8 @@ class Crossover:
         return new_population  
 
 class SinglePointCrossover(Crossover):
-    def __init__(self) -> None:
-        pass
+    def __init__(self, whole_pop_size: int) -> None:
+        self.whole_pop_size = whole_pop_size
 
     @staticmethod
     def getName() -> str:
@@ -56,10 +56,12 @@ class SinglePointCrossover(Crossover):
 
     @staticmethod
     def getParamteres() -> List[Tuple[str]]:
-        return []
+        return [("rozmiar populacji", "30")]
 
     @staticmethod
-    def validateParameters() -> bool:
+    def validateParameters(whole_pop_size: int) -> bool:
+        if whole_pop_size < 0:
+            return False
         return True
 
     def crossover(self) -> list[Individual]:
@@ -71,8 +73,8 @@ class SinglePointCrossover(Crossover):
         return [child1, child2]
     
 class TwoPointCrossover(Crossover):
-    def __init__(self) -> None:
-        pass
+    def __init__(self, whole_pop_size: int) -> None:
+        self.whole_pop_size = whole_pop_size
 
     @staticmethod
     def getName() -> str:
@@ -80,10 +82,12 @@ class TwoPointCrossover(Crossover):
 
     @staticmethod
     def getParamteres() -> List[Tuple[str]]:
-        return []
+        return [("rozmiar populacji", "30")]
 
     @staticmethod
-    def validateParameters() -> bool:
+    def validateParameters(whole_pop_size) -> bool:
+        if whole_pop_size < 0:
+            return False
         return True
     
     def crossover(self) -> list[Individual]:
@@ -96,8 +100,9 @@ class TwoPointCrossover(Crossover):
         return [child1, child2]
     
 class UniformCrossover(Crossover):
-    def __init__(self, probability: float) -> None:
+    def __init__(self, probability: float, whole_pop_size: int) -> None:
         self.probability = probability
+        self.whole_pop_size = whole_pop_size
 
     @staticmethod
     def getName() -> str:
@@ -105,11 +110,11 @@ class UniformCrossover(Crossover):
 
     @staticmethod
     def getParamteres() -> List[Tuple[str]]:
-        return [("prawdopodobieństwo", "0.5")]
+        return [("prawdopodobieństwo", "0.5"), ("rozmiar populacji", "30")]
 
     @staticmethod
-    def validateParameters(probability: float) -> bool:
-        if probability < 0 or probability > 1:
+    def validateParameters(probability: float, whole_pop_size: int) -> bool:
+        if probability < 0 or probability > 1 or whole_pop_size < 0:
             return False
         return True
         
@@ -129,8 +134,9 @@ class UniformCrossover(Crossover):
     
 
 class DiscreteCrossover(Crossover):
-    def __init__(self, probability: float) -> None:
+    def __init__(self, probability: float, whole_pop_size: int) -> None:
         self.probability = probability
+        self.whole_pop_size = whole_pop_size
 
     @staticmethod
     def getName() -> str:
@@ -138,11 +144,11 @@ class DiscreteCrossover(Crossover):
 
     @staticmethod
     def getParamteres() -> List[Tuple[str]]:
-        return [("prawdopodobieństwo", "0.5")]
+        return [("prawdopodobieństwo", "0.5"), ("rozmiar populacji", "30")]
 
     @staticmethod
-    def validateParameters(probability: float) -> bool:
-        if probability < 0 or probability > 1:
+    def validateParameters(probability: float, whole_pop_size: int) -> bool:
+        if probability < 0 or probability > 1 or whole_pop_size < 0:
             return False
         return True
         

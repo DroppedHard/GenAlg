@@ -97,8 +97,9 @@ class TournamentSelection(Selection):
 
 
 class RouletteWheelSelection(Selection):
-    def __init__(self, n_to_select: int):
+    def __init__(self, n_to_select: int, optimization_type: Literal["min", "max"]):
         self.n_to_select = n_to_select
+        self.optimization_type = optimization_type
 
     @staticmethod
     def getName():
@@ -109,15 +110,14 @@ class RouletteWheelSelection(Selection):
         return [("Liczba osobników do wytypowania", "5")]
 
     @staticmethod
-    def validateParameters(n_to_select: int) -> bool:
-        if n_to_select < 0:
+    def validateParameters(n_to_select: int, optimization_type: Literal["min", "max"]) -> bool:
+        if n_to_select < 0 or optimization_type not in ["min", "max"]:
             return False
         return True
 
     def calculate_distribution(
-        self, target_function_vals: List[float], optimization_type: str
-    ) -> List[float]:
-        if optimization_type == "max":
+        self, target_function_vals: List[float]) -> List[float]:
+        if self.optimization_type == "max":
             val_sum = sum(target_function_vals)
             probability = [val / val_sum for val in target_function_vals]
         else:
@@ -128,7 +128,7 @@ class RouletteWheelSelection(Selection):
         distribution = [sum(probability[: i + 1]) for i in range(len(probability))]
         return distribution
 
-    def select(self, population:List[Individual], optimization_type: Literal["min", "max"]) -> List[Individual]:
+    def select(self, population:List[Individual]) -> List[Individual]:
         target_function_vals = [idv.target_function_val for idv in population]
 
         minimum = min(target_function_vals)
@@ -140,7 +140,7 @@ class RouletteWheelSelection(Selection):
             ]
 
         distribution = self.calculate_distribution(
-            target_function_vals, optimization_type
+            target_function_vals
         )
 
         rand = random.random()
