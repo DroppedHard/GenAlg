@@ -2,6 +2,8 @@ import customtkinter as ctk
 from app.components.labeled_entry import LabeledEntry
 from app.components.labeled_combo import LabeledComboBox
 from app.components.button import CustomButton
+from app.algorithms.selections import AVAILABLE_SELECTIONS
+from app.simulation import Simulation
 
 TITLE_FONT_SIZE = 20
 FIELDS_PADX = 5
@@ -13,26 +15,23 @@ class HomePage(ctk.CTkFrame):
         super().__init__(master, **kwargs)
 
         self.layout()
+        self.param_entries = {}
 
-        # Definicje metod i ich parametrów - TODO tutaj będą buildery klas?
+        # Definicje metod i ich parametrów
         self.selection_methods = {
-            "Procent najlepszych": [("Procent najlepszych (%)", "50")],
-            "Turniejowa": [
-                ("Rozmiar turnieju", "3"),
-                ("test1 (%)", "50"),
-                ("test2 (%)", "50"),
-            ],
-            "Rankingowa": [("Współczynnik selekcji", "1.5")],
+            sel.getName(): (sel.getParamteres(), sel.validateParameters)
+            for sel in AVAILABLE_SELECTIONS
         }
 
+        # TODO te 2 analogicznie jak wyżej po poprawkach
         self.crossover_methods = {
-            "Jednopunktowe": [],
-            "Jednorodne": [("Prawdopodobieństwo wymiany", "0.7")],
+            "Jednopunktowe": ([], lambda: True),
+            "Jednorodne": ([("Prawdopodobieństwo wymiany", "0.7")], lambda x: True),
         }
 
         self.mutation_methods = {
-            "Brzegowa": [("Prawdopodobieństwo mutacji", "0.1")],
-            "Jednopunktowa": [("Pozycja mutacji (0-1)", "0.5")],
+            "Brzegowa": ([("Prawdopodobieństwo mutacji", "0.1")], lambda x: True),
+            "Jednopunktowa": ([("Pozycja mutacji (0-1)", "0.5")], lambda x: True),
         }
 
         self.render()
@@ -137,25 +136,19 @@ class HomePage(ctk.CTkFrame):
         self.update_mutation_params()
 
     def update_selection_params(self, event=None):
-        """Aktualizuje parametry dla metody selekcji"""
         selected_method = self.selection_select.get_value()
-        print(f"Wybrana metoda selekcji: {selected_method}")
         self.update_params(
             self.selection_frame, self.selection_methods, selected_method
         )
 
     def update_crossover_params(self, event=None):
-        """Aktualizuje parametry dla metody krzyżowania"""
         selected_method = self.crossover_select.get_value()
-        print(f"Wybrana metoda krzyżowania: {selected_method}")
         self.update_params(
             self.crossover_frame, self.crossover_methods, selected_method
         )
 
     def update_mutation_params(self, event=None):
-        """Aktualizuje parametry dla metody mutacji"""
         selected_method = self.mutation_select.get_value()
-        print(f"Wybrana metoda mutacji: {selected_method}")
         self.update_params(self.mutation_frame, self.mutation_methods, selected_method)
 
     def update_params(self, frame, methods_dict, selected_method):
@@ -163,10 +156,129 @@ class HomePage(ctk.CTkFrame):
         for widget in frame.winfo_children():
             widget.destroy()
 
+        param_list, _ = methods_dict.get(selected_method, ([], None))
+        self.param_entries[frame] = {}
+        if not param_list:
+            label = ctk.CTkLabel(
+                frame, text="Brak parametrów", font=("Arial", 12, "italic")
+            )
+            label.pack(pady=5)
+            return
+
         if selected_method in methods_dict:
-            for label, default in methods_dict[selected_method]:
+            params, _ = methods_dict[selected_method]
+            for label, default in params:
                 input_field = LabeledEntry(frame, label, default)
                 input_field.pack(pady=5, fill="x")
+                self.param_entries[frame][label] = input_field
+
+    def get_values_dict(self):
+        """Zwraca słownik wartości wpisanych przez użytkownika"""
+        values = {}
+        for frame, entries in self.param_entries.items():
+            for param_name, entry_widget in entries.items():
+                values[param_name] = entry_widget.get_value()
+        return values
+
+    def verifyParameters(self) -> bool:
+        """Sprawdza wszystkie parametry"""
+        for frame, entries in self.param_entries.items():
+            selected_method = None
+            validation_function = None
+
+            if frame == self.selection_frame:
+                selected_method = self.selection_select.get_value()
+                validation_function = self.selection_methods[selected_method][1]
+            elif frame == self.crossover_frame:
+                selected_method = self.crossover_select.get_value()
+                validation_function = self.crossover_methods[selected_method][1]
+            elif frame == self.mutation_frame:
+                selected_method = self.mutation_select.get_value()
+                validation_function = self.mutation_methods[selected_method][1]
+
+            if selected_method and validation_function:
+                param_values = {
+                    name: entry.get_value() for name, entry in entries.items()
+                }
+
+                try:
+                    param_values = [float(value) for value in param_values.values()]
+                    print(*param_values)
+
+                    if not validation_function(*param_values):
+                        print(
+                            f"Błąd walidacji dla metody {selected_method}: {param_values}"
+                        )
+                        for entry in entries.values():
+                            entry.entry.configure(fg_color="red")
+                        return False
+                except TypeError as e:
+                    print(
+                        f"Błąd wywołania funkcji walidującej dla {selected_method}: {e}"
+                    )
+                    return False
+        return True
 
     def start_simulation(self):
-        print("Symulacja uruchomiona!")
+        """Sprawdza wszystkie parametry i uruchamia symulację, jeśli są poprawne."""
+
+        method_instances = {}
+
+        for method_type, select_widget, method_dict, frame in [
+            (
+                "selekcja",
+                self.selection_select,
+                self.selection_methods,
+                self.selection_frame,
+            ),
+            (
+                "krzyżowanie",
+                self.crossover_select,
+                self.crossover_methods,
+                self.crossover_frame,
+            ),
+            (
+                "mutacja",
+                self.mutation_select,
+                self.mutation_methods,
+                self.mutation_frame,
+            ),
+        ]:
+            selected_method = select_widget.get_value()
+
+            if selected_method in method_dict:
+                param_list, validation_function = method_dict[selected_method]
+
+                param_values = [
+                    entry_widget.get_value()
+                    for label, entry_widget in self.param_entries.get(frame, {}).items()
+                ]
+
+                param_values = [float(v) if "." in v else int(v) for v in param_values]
+
+                if not validation_function(*param_values):
+                    print(f"Błąd walidacji dla metody {method_type}: {selected_method}")
+                    return
+
+                method_class = next(
+                    (
+                        cls
+                        for cls in AVAILABLE_SELECTIONS
+                        if cls.getName() == selected_method
+                    ),
+                    None,
+                )
+
+                if method_class:
+                    method_instances[method_type] = method_class(*param_values)
+                    print(
+                        f"✅ Utworzono instancję {method_type}: {method_instances[method_type]}"
+                    )
+
+        if len(method_instances) == 3:
+            simulation = Simulation(
+                method_instances["selekcja"],
+                method_instances["krzyżowanie"],
+                method_instances["mutacja"],
+            )
+            simulation.run()
