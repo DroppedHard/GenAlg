@@ -3,6 +3,7 @@ from app.components.labeled_entry import LabeledEntry
 from app.components.labeled_combo import LabeledComboBox
 from app.components.button import CustomButton
 from app.algorithms.selections import AVAILABLE_SELECTIONS
+from app.algorithms.crossovers import AVAILABLE_CROSSOVERS
 from app.simulation import Simulation
 
 TITLE_FONT_SIZE = 20
@@ -25,8 +26,8 @@ class HomePage(ctk.CTkFrame):
 
         # TODO te 2 analogicznie jak wyżej po poprawkach
         self.crossover_methods = {
-            "Jednopunktowe": ([], lambda: True),
-            "Jednorodne": ([("Prawdopodobieństwo wymiany", "0.7")], lambda x: True),
+            crossover.getName(): (crossover.getParamteres(), crossover.validateParameters)
+            for crossover in AVAILABLE_CROSSOVERS
         }
 
         self.mutation_methods = {
@@ -253,8 +254,12 @@ class HomePage(ctk.CTkFrame):
                     entry_widget.get_value()
                     for label, entry_widget in self.param_entries.get(frame, {}).items()
                 ]
-
-                param_values = [float(v) if "." in v else int(v) for v in param_values]
+                param_values = [
+                    float(v) if v.replace('.', '', 1).isdigit() and '.' in v 
+                    else int(v) if v.isdigit() 
+                    else str(v) 
+                    for v in param_values
+                ]
 
                 if not validation_function(*param_values):
                     print(f"Błąd walidacji dla metody {method_type}: {selected_method}")
@@ -263,7 +268,7 @@ class HomePage(ctk.CTkFrame):
                 method_class = next(
                     (
                         cls
-                        for cls in AVAILABLE_SELECTIONS
+                        for cls in AVAILABLE_SELECTIONS + AVAILABLE_CROSSOVERS
                         if cls.getName() == selected_method
                     ),
                     None,
