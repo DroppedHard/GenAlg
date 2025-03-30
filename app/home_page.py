@@ -86,6 +86,8 @@ class HomePage(ctk.CTkFrame):
     def start_simulation(self):
         """Sprawdza wszystkie parametry i uruchamia symulację, jeśli są poprawne."""
         values = self.simulation_config.get_values()
+        population = self.population_config.get_values()
+        print(self.selection_config.get_method_instance().optimization_type)
 
         # Tworzenie instancji klasy Simulation
         try:
@@ -97,7 +99,7 @@ class HomePage(ctk.CTkFrame):
                 ),
                 None,
             )
-
+            print(values)
             if mutation_class:
                 simulation = Simulation(
                     objective_function=values["Funkcja celu"],
@@ -106,6 +108,12 @@ class HomePage(ctk.CTkFrame):
                         float(values["Zakres (początek)"]),
                         float(values["Zakres (koniec)"]),
                     ),
+                    population_size=int(population["Liczność populacji"]),
+                    n_of_variables=3,
+                    chrom_length=int(population["Długość chromosomu"]),
+                    precision=float(population["Dokładność reprezentacji chromosomu"]),
+                    optimization_type=self.selection_config.get_method_instance().optimization_type,
+                    best_indv_number=int(population["Liczba najlepszych osobników"]),
                     inversion=Inversion(float(values["Prawdopodobieństwo inwersji"])),
                     selection=self.selection_config.get_method_instance(),
                     crossover=self.crossover_config.get_method_instance(),
