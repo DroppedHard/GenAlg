@@ -24,12 +24,17 @@ class Population:
         self.precission = precision
         self.optimization_type = optimization_type
         self.best_indv_number = best_indv_number
-        self.population = self.create_population() 
+        self.population = self.create_population()
 
     def create_population(self):
         return [
             Individual(
-                self.a, self.b, self.func, self.chrom_length, self.n_of_variables, self.precission
+                self.a,
+                self.b,
+                self.func,
+                self.chrom_length,
+                self.n_of_variables,
+                self.precission,
             )
             for _ in range(self.population_size)
         ]

@@ -1,11 +1,22 @@
 from app.representation.chromosome import Chromosome
 from typing import List
 
+
 class Individual:
-    def __init__(self, a: int = None, b: int = None, function=None, length: int = None, n: int = None, precission:int = None, chromosomes: List[int] = None, parent=None):
-        '''
+    def __init__(
+        self,
+        a: int = None,
+        b: int = None,
+        function=None,
+        length: int = None,
+        n: int = None,
+        precission: int = None,
+        chromosomes: List[int] = None,
+        parent=None,
+    ):
+        """
         Initialize an Individual either directly or from a parent.
-        '''
+        """
         if parent:
             # Initialize from parent
             self.a = parent.a
@@ -24,7 +35,7 @@ class Individual:
             self.n = n
             self.precission = precission
             self.chromosomes = [Chromosome(length) for _ in range(n)]
-        
+
         self.decodes = self.decode()
         self.target_function_val = self.target_function(self.decodes)
 
@@ -38,7 +49,7 @@ class Individual:
         return all_values
 
     def target_function(self, x_values: list):
-        target_val = self.function(*x_values)
+        target_val = self.function(x_values)
         print(f"PRECISSION {self.precission}")
         if self.precission:
             target_val = round(target_val, self.precission)

@@ -39,5 +39,6 @@ class PopulationConfig(ctk.CTkFrame):
 
     def get_values(self):
         return {
-            key: entry.get_value() for key, entry in self.population_entries.items()
+            key: int(entry.get_value())
+            for key, entry in self.population_entries.items()
         }

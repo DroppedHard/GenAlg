@@ -8,7 +8,7 @@ class App(ctk.CTk):
         super().__init__()
 
         self.title("Ewolucyjny Algorytm Genetyczny")
-        self.geometry("1000x650")
+        self.geometry("1000x750")
         self.iconphoto(False, tk.PhotoImage(file="assets/title_icon.png"))
 
         self.home_page = HomePage(self)

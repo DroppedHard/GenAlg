@@ -3,20 +3,18 @@ from app.algorithms.crossovers import AVAILABLE_CROSSOVERS
 from app.algorithms.mutation import AVAILABLE_MUTATIONS, Inversion
 from app.components.config.method_config import MethodConfig
 from app.components.config.population_config import PopulationConfig
-from app.components.config.selection_config import SelectionConfig
 from app.components.config.simulation_config import SimulationConfig
-from app.components.labeled_entry import LabeledEntry
 from app.components.labeled_combo import LabeledComboBox
 from app.components.button import CustomButton
 from app.algorithms.selections import AVAILABLE_SELECTIONS
 from app.config import (
     COL_NUM,
-    FIELDS_PADX,
     FIELDS_PADY,
     ROW_NUM,
     TITLE_FONT_SIZE,
     TITLE_TEXT,
 )
+from app.representation.population import Population
 from app.simulation import Simulation
 
 
@@ -80,16 +78,22 @@ class HomePage(ctk.CTkFrame):
 
         self.start_button = CustomButton(self, "Start", command=self.start_simulation)
         self.start_button.grid(
-            row=4, column=2, columnspan=int(COL_NUM / 3), pady=20, sticky="ew"
+            row=4,
+            column=2,
+            columnspan=int(COL_NUM / 3),
+            pady=FIELDS_PADY * 2,
+            sticky="ew",
         )
 
     def start_simulation(self):
         """Sprawdza wszystkie parametry i uruchamia symulację, jeśli są poprawne."""
-        values = self.simulation_config.get_values()
+        simulation = self.simulation_config.get_values()
         population = self.population_config.get_values()
-        print(self.selection_config.get_method_instance().optimization_type)
 
-        # Tworzenie instancji klasy Simulation
+        print(
+            simulation,
+            population,
+        )
         try:
             mutation_class = next(
                 (
@@ -99,27 +103,26 @@ class HomePage(ctk.CTkFrame):
                 ),
                 None,
             )
-            print(values)
+            population = Population(
+                simulation["Zakres (początek)"],
+                simulation["Zakres (koniec)"],
+                func=simulation["Funkcja celu"],
+                n_of_variables=simulation["Liczba argumentów"],
+                chrom_length=population["Długość chromosomu"],
+                population_size=population["Liczność populacji"],
+                precision=population["Dokładność reprezentacji chromosomu"],
+                optimization_type=self.selection_config.get_method_instance().optimization_type,
+                best_indv_number=population["Liczba najlepszych osobników"],
+            )
+
             if mutation_class:
                 simulation = Simulation(
-                    objective_function=values["Funkcja celu"],
-                    epochs=int(values["Liczba epok"]),
-                    limit=(
-                        float(values["Zakres (początek)"]),
-                        float(values["Zakres (koniec)"]),
-                    ),
-                    population_size=int(population["Liczność populacji"]),
-                    n_of_variables=3,
-                    chrom_length=int(population["Długość chromosomu"]),
-                    precision=int(population["Dokładność reprezentacji chromosomu"]),
-                    optimization_type=self.selection_config.get_method_instance().optimization_type,
-                    best_indv_number=int(population["Liczba najlepszych osobników"]),
-                    inversion=Inversion(float(values["Prawdopodobieństwo inwersji"])),
+                    epochs=simulation["Liczba epok"],
+                    population=population,
+                    inversion=Inversion(simulation["Prawdopodobieństwo inwersji"]),
                     selection=self.selection_config.get_method_instance(),
                     crossover=self.crossover_config.get_method_instance(),
-                    mutation=mutation_class(
-                        float(values["Prawdopodobieństwo mutacji"])
-                    ),
+                    mutation=mutation_class(simulation["Prawdopodobieństwo mutacji"]),
                 )
                 simulation.run()
         except KeyError as e:
