@@ -1,0 +1,6 @@
+TITLE_TEXT = "Ewolucyjny Algorytm Genetyczny"
+TITLE_FONT_SIZE = 20
+FIELDS_PADX = 5
+FIELDS_PADY = 0
+COL_NUM = 6
+ROW_NUM = 5
