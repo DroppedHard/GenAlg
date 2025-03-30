@@ -111,7 +111,7 @@ class HomePage(ctk.CTkFrame):
                     population_size=int(population["Liczność populacji"]),
                     n_of_variables=3,
                     chrom_length=int(population["Długość chromosomu"]),
-                    precision=float(population["Dokładność reprezentacji chromosomu"]),
+                    precision=int(population["Dokładność reprezentacji chromosomu"]),
                     optimization_type=self.selection_config.get_method_instance().optimization_type,
                     best_indv_number=int(population["Liczba najlepszych osobników"]),
                     inversion=Inversion(float(values["Prawdopodobieństwo inwersji"])),

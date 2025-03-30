@@ -45,6 +45,7 @@ class Simulation:
             self.n_of_variables,
             self.chrom_length,
             self.population_size,
+            self.precision,
             self.optimization_type,
             self.best_indv_number,
         )
@@ -52,28 +53,20 @@ class Simulation:
 
     def run(self):
         """Rozpoczęcie symulacji"""
+
         print("ZACZYNAMY")
         self.initializePopulation()
-        print("Inizjalizacja populacji")
-        print(self.population.population)
         for _ in range(self.epochs):
             individuals = self.population.population
-            # evaluate
-            # te poniżej to przykładowo jak to ma iść - tutaj możecie dostosować do tego co chcecie
             selected = self.selection.select(individuals)
-            print("After selection:")
-            print(selected)
             self.population.new_population(selected)
             best_individuals = self.population.get_best_individuals()
-            print("Best individuals:")
-            print(best_individuals)
             pop_after_crossed = self.crossover.crossover_population(selected, best_individuals)
-            print("After crossover:")
-            print(pop_after_crossed)
             mutated = list(map(lambda ind: self.mutation.mutate(ind), pop_after_crossed))
-            print("After mutation:")
-            print(mutated)
-            self.population.new_population(mutated)
+            inversed = self.inversion.inverse(mutated)
+            self.population.new_population(inversed)
+
+
 
         print("KONIEC")
         print("Populacja:")

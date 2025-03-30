@@ -10,7 +10,7 @@ class PopulationConfig(ctk.CTkFrame):
 
         self.config_values = {
             "Liczność populacji": "50",
-            "Dokładność reprezentacji chromosomu": "0.001",
+            "Dokładność reprezentacji chromosomu": "4",
             "Długość chromosomu": "10",
             "Liczba najlepszych osobników": "5",
         }

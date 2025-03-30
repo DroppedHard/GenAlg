@@ -69,18 +69,14 @@ class Inversion:
     def should_apply(self) -> bool:
         return random.random() < self.probability
 
-    def apply(self, individual: Individual):
-        if self.should_apply():
-            idx1, idx2 = sorted(random.sample(range(len(individual.chromosomes)), 2))
-            individual.chromosomes[idx1 : idx2 + 1] = reversed(
-                individual.chromosomes[idx1 : idx2 + 1]
-            )
-
-def inversion(population: "Population") -> "Population":
-    inversion_operator = Inversion()
-    for individual in population.population:
-        inversion_operator.apply(individual)
-    return population
+    def inverse(self, individual: Individual):
+        for chromosome in individual.chromosomes:
+            if self.should_apply():
+                idx1, idx2 = random.sample(range(len(chromosome.gens)), 2)
+                chromosome.gens[idx1 : idx2 + 1] = reversed(
+                    chromosome.gens[idx1 : idx2 + 1]
+                )
+        return individual
 
 
 AVAILABLE_MUTATIONS: List[Mutation] = [
