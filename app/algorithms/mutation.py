@@ -4,8 +4,6 @@ import math
 import random
 from typing import List
 
-# import numpy as np
-
 
 class Mutation:
     def __init__(self, mutation_rate: float = 0.1):
@@ -30,21 +28,24 @@ class BoundaryMutation(Mutation):
         return "Mutacja Brzegowa"
 
     def mutate(self, individual: Individual):
-        if self.should_mutate():
-            if random.random() < 0.5:
-                individual.genotype[0] ^= 1
-            else:
-                individual.genotype[-1] ^= 1
-
+        for chromosome in individual.chromosomes:
+            if self.should_mutate():
+                if random.random() < 0.5:
+                    chromosome.gens[0] ^= 1
+                else:
+                    chromosome.gens[-1] ^= 1
+        return individual
 
 class SinglePointMutation(Mutation):
     def getName() -> str:
         return "Mutacja Jednopunktowa"
 
     def mutate(self, individual: Individual):
-        if self.should_mutate():
-            index = random.randint(0, len(individual.genotype) - 1)
-            individual.genotype[index] ^= 1
+        for chromosome in individual.chromosomes:
+            if self.should_mutate():
+                index = random.randint(0, len(chromosome.gens) - 1)
+                chromosome.gens[index] ^= 1
+        return individual
 
 
 class TwoPointMutation(Mutation):
@@ -52,43 +53,12 @@ class TwoPointMutation(Mutation):
         return "Mutacja Dwupunktowa"
 
     def mutate(self, individual: Individual):
-        if self.should_mutate():
-            idx1, idx2 = random.sample(range(len(individual.genotype)), 2)
-            individual.genotype[idx1] ^= 1
-            individual.genotype[idx2] ^= 1
-
-
-"""
-class SoftmaxMutation(Mutation):
-    def mutate(self, individual: Individual):
-        values = individual.genotype
-        max_value = max(values)
-        exp_values = [math.exp(v - max_value) for v in values]
-        sum_exp_values = sum(exp_values)
-        probabilities = [ev / sum_exp_values for ev in exp_values]
-
-        for i in range(len(individual.genotype)):
-            if random.random() < probabilities[i] * self.mutation_rate:
-                individual.genotype[i] ^= 1
-
-class LambdaMutation(Mutation):
-    def mutate(self, individual: Individual):
-        if self.should_mutate():
-            chaotic_index = int(
-                (math.sin(random.random()) + 1) / 2 * (len(individual.genotype) - 1)
-            )
-            individual.genotype[chaotic_index] ^= 1
-
-class JumpingGeneMutation(Mutation):
-    def mutate(self, individual: Individual):
-        if self.should_mutate():
-            index1, index2 = random.sample(range(len(individual.genotype)), 2)
-            individual.genotype[index1], individual.genotype[index2] = (
-                individual.genotype[index2],
-                individual.genotype[index1],
-            )
-"""
-
+        for chromosome in individual.chromosomes:
+            if self.should_mutate():
+                idx1, idx2 = random.sample(range(len(individual.chromosomes)), 2)
+                chromosome.gens[idx1] ^= 1
+                chromosome.gens[idx2] ^= 1
+        return individual
 
 class Inversion:
     def __init__(self, probability: float = 0.1):
@@ -99,19 +69,14 @@ class Inversion:
     def should_apply(self) -> bool:
         return random.random() < self.probability
 
-    def apply(self, individual: Individual):
-        if self.should_apply():
-            idx1, idx2 = sorted(random.sample(range(len(individual.genotype)), 2))
-            individual.genotype[idx1 : idx2 + 1] = reversed(
-                individual.genotype[idx1 : idx2 + 1]
-            )
-
-
-def inversion(population: "Population") -> "Population":
-    inversion_operator = Inversion()
-    for individual in population.population:
-        inversion_operator.apply(individual)
-    return population
+    def inverse(self, individual: Individual):
+        for chromosome in individual.chromosomes:
+            if self.should_apply():
+                idx1, idx2 = random.sample(range(len(chromosome.gens)), 2)
+                chromosome.gens[idx1 : idx2 + 1] = reversed(
+                    chromosome.gens[idx1 : idx2 + 1]
+                )
+        return individual
 
 
 AVAILABLE_MUTATIONS: List[Mutation] = [

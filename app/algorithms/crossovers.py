@@ -1,5 +1,6 @@
 import random
 from app.representation.individual import Individual
+from app.representation.chromosome import Chromosome
 from app.representation.population import Population
 from typing import List, Tuple
 from copy import deepcopy
@@ -66,8 +67,11 @@ class SinglePointCrossover(Crossover):
 
     def crossover(self) -> list[Individual]:
         point = random.randint(1, self.parent1.length - 1)
-        child1_chromosomes = self.parent1.chromosomes[:point] + self.parent2.chromosomes[point:]
-        child2_chromosomes = self.parent2.chromosomes[:point] + self.parent1.chromosomes[point:]
+        base = list(zip(self.parent1.chromosomes, self.parent2.chromosomes))
+
+        child1_chromosomes = [Chromosome(pair[0].length, pair[0].gens[:point] + pair[1].gens[point:]) for pair in base]
+        child2_chromosomes = [Chromosome(pair[0].length, pair[0].gens[point:] + pair[1].gens[:point]) for pair in base]
+
         child1 = Individual(parent = self.parent1, chromosomes=child1_chromosomes)
         child2 = Individual(parent = self.parent2, chromosomes=child2_chromosomes)
         return [child1, child2]
@@ -93,8 +97,12 @@ class TwoPointCrossover(Crossover):
     def crossover(self) -> list[Individual]:
         point1 = random.randint(1, self.parent1.length - 2)
         point2 = random.randint(point1 + 1, self.parent1.length - 1)
-        child1_chromosomes = self.parent1.chromosomes[:point1] + self.parent2.chromosomes[point1:point2] + self.parent1.chromosomes[point2:]
-        child2_chromosomes = self.parent2.chromosomes[:point1] + self.parent1.chromosomes[point1:point2] + self.parent2.chromosomes[point2:]
+
+        base = list(zip(self.parent1.chromosomes, self.parent2.chromosomes))
+
+        child1_chromosomes = [Chromosome(pair[0].length, pair[0].gens[:point1] + pair[1].gens[point1:point2] + pair[0].gens[point2:]) for pair in base]
+        child2_chromosomes = [Chromosome(pair[1].length, pair[1].gens[:point1] + pair[0].gens[point1:point2] + pair[1].gens[point2:]) for pair in base]
+
         child1 = Individual(parent = self.parent1, chromosomes=child1_chromosomes)
         child2 = Individual(parent = self.parent2, chromosomes=child2_chromosomes)
         return [child1, child2]
@@ -121,13 +129,19 @@ class UniformCrossover(Crossover):
     def crossover(self) -> list[Individual]:
         child1_chromosomes = []
         child2_chromosomes = []
-        for i in range(self.parent1.n):
-            if random.random() < self.probability:
-                child1_chromosomes.append(self.parent1.chromosomes[i])
-                child2_chromosomes.append(self.parent2.chromosomes[i])
-            else:
-                child1_chromosomes.append(self.parent2.chromosomes[i])
-                child2_chromosomes.append(self.parent1.chromosomes[i])
+        base = list(zip(self.parent1.chromosomes, self.parent2.chromosomes))
+        for pair in base:
+            child1_chromosome = []
+            child2_chromosome = []
+            for i in range(self.parent1.n):
+                if random.random() < self.probability:
+                    child1_chromosome.append(pair[0].gens[i])
+                    child2_chromosome.append(pair[1].gens[i])
+                else:
+                    child1_chromosome.append(pair[1].gens[i])
+                    child2_chromosome.append(pair[0].gens[i])
+            child1_chromosomes.append(Chromosome(pair[0].length, child1_chromosome))
+            child2_chromosomes.append(Chromosome(pair[1].length, child2_chromosome))
         child1 = Individual(parent = self.parent1, chromosomes=child1_chromosomes)
         child2 = Individual(parent = self.parent2, chromosomes=child2_chromosomes)
         return [child1, child2]
@@ -154,11 +168,15 @@ class DiscreteCrossover(Crossover):
         
     def crossover(self) -> list[Individual]:
         child_chromosomes = []
-        for i in range(self.parent1.n):
-            if random.random() < self.probability:
-                child_chromosomes.append(self.parent1.chromosomes[i])
-            else:
-                child_chromosomes.append(self.parent2.chromosomes[i])
+        base = list(zip(self.parent1.chromosomes, self.parent2.chromosomes))
+        for pair in base:
+            child_chromosome = []
+            for i in range(self.parent1.n):
+                if random.random() < self.probability:
+                    child_chromosome.append(pair[0].gens[i])
+                else:
+                    child_chromosome.append(pair[1].gens[i])
+            child_chromosomes.append(Chromosome(pair[0].length, child_chromosome))
         child = Individual(parent = self.parent1, chromosomes=child_chromosomes)
         return [child]   
 

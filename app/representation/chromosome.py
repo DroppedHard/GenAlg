@@ -1,9 +1,12 @@
 from random import randint
 
 class Chromosome:
-    def __init__(self, length:int):
+    def __init__(self, length:int, gens: list[int] = None):
         self.length = length
-        self._generate_gens()
+        if gens:
+            self.gens = gens
+        else:
+            self._generate_gens()
 
     def _generate_gens(self):
         self.gens = [randint(0,1) for _ in range(self.length)]

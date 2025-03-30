@@ -11,7 +11,7 @@ class Population:
         n_of_variables: int,
         chrom_length: int,
         population_size: int,
-        epochs: int,
+        precision: float,
         optimization_type: Literal["min", "max"],
         best_indv_number: int,
     ):
@@ -21,7 +21,7 @@ class Population:
         self.n_of_variables = n_of_variables
         self.chrom_length = chrom_length
         self.population_size = population_size
-        self.epochs = epochs
+        self.precission = precision
         self.optimization_type = optimization_type
         self.best_indv_number = best_indv_number
         self.population = self.create_population() 
@@ -29,7 +29,7 @@ class Population:
     def create_population(self):
         return [
             Individual(
-                self.a, self.b, self.func, self.chrom_length, self.n_of_variables
+                self.a, self.b, self.func, self.chrom_length, self.n_of_variables, self.precission
             )
             for _ in range(self.population_size)
         ]
