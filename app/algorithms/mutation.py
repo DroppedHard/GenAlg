@@ -16,53 +16,79 @@ class Mutation:
     def should_mutate(self) -> bool:
         return random.random() < self.mutation_rate
 
-    def boundary_mutation(self, individual: "Individual"):
+    def mutate(self, individual: "Individual"):
+        pass
+
+class BoundaryMutation(Mutation):
+    def mutate(self, individual: "Individual"):
         if self.should_mutate():
             if random.random() < 0.5:
                 individual.genotype[0] ^= 1
             else:
                 individual.genotype[-1] ^= 1
 
-    def single_point_mutation(self, individual: "Individual"):
+class SinglePointMutation(Mutation):
+    def mutate(self, individual: "Individual"):
         if self.should_mutate():
             index = random.randint(0, len(individual.genotype) - 1)
             individual.genotype[index] ^= 1
 
-    def two_point_mutation(self, individual: "Individual"):
+class TwoPointMutation(Mutation):
+    def mutate(self, individual: "Individual"):
         if self.should_mutate():
             idx1, idx2 = random.sample(range(len(individual.genotype)), 2)
             individual.genotype[idx1] ^= 1
             individual.genotype[idx2] ^= 1
 
-    def softmax_mutation(self, individual: "Individual"):
-        pass
-        # TODO - poprawić by nie potrzebowało numpy
-        # values = np.array(individual.genotype, dtype=np.float32)
-        # exp_values = np.exp(values - np.max(values))
-        # probabilities = exp_values / np.sum(exp_values)
+'''
+class SoftmaxMutation(Mutation):
+    def mutate(self, individual: "Individual"):
+        values = individual.genotype
+        max_value = max(values)
+        exp_values = [math.exp(v - max_value) for v in values]
+        sum_exp_values = sum(exp_values)
+        probabilities = [ev / sum_exp_values for ev in exp_values]
 
-        # for i in range(len(individual.genotype)):
-        #     if random.random() < probabilities[i] * self.mutation_rate:
-        #         individual.genotype[i] ^= 1
+        for i in range(len(individual.genotype)):
+            if random.random() < probabilities[i] * self.mutation_rate:
+                individual.genotype[i] ^= 1
 
-    def lambda_mutation(self, individual: "Individual"):
+class LambdaMutation(Mutation):
+    def mutate(self, individual: "Individual"):
         if self.should_mutate():
             chaotic_index = int(
                 (math.sin(random.random()) + 1) / 2 * (len(individual.genotype) - 1)
             )
             individual.genotype[chaotic_index] ^= 1
 
-    def jumping_gene_mutation(self, individual: "Individual"):
+class JumpingGeneMutation(Mutation):
+    def mutate(self, individual: "Individual"):
         if self.should_mutate():
             index1, index2 = random.sample(range(len(individual.genotype)), 2)
             individual.genotype[index1], individual.genotype[index2] = (
                 individual.genotype[index2],
                 individual.genotype[index1],
             )
+'''
 
-    def inversion(self, individual: "Individual"):
-        if self.should_mutate():
+class Inversion:
+    def __init__(self, probability: float = 0.1):
+        if not (0 <= probability <= 1):
+            raise ValueError("probability must be between 0 and 1")
+        self.probability = probability
+
+    def should_apply(self) -> bool:
+        return random.random() < self.probability
+
+    def apply(self, individual: "Individual"):
+        if self.should_apply():
             idx1, idx2 = sorted(random.sample(range(len(individual.genotype)), 2))
-            individual.genotype[idx1 : idx2 + 1] = reversed(
-                individual.genotype[idx1 : idx2 + 1]
+            individual.genotype[idx1:idx2 + 1] = reversed(
+                individual.genotype[idx1:idx2 + 1]
             )
+
+def inversion(population: "Population") -> "Population":
+    inversion_operator = Inversion()
+    for individual in population.population:
+        inversion_operator.apply(individual)
+    return population
