@@ -15,6 +15,8 @@ class Simulation:
         selection: Selection,
         crossover: Crossover,
     ):
+        if epochs < 0:
+            raise ValueError(f"Liczba epok musi być dodatnia, a nie równa {epochs}")
         self.epochs = epochs
         self.population = population
         self.inversion = inversion

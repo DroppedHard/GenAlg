@@ -15,6 +15,10 @@ class Population:
         optimization_type: Literal["min", "max"],
         best_indv_number: int,
     ):
+        if population_size <= 0: raise ValueError(f"Liczność populacji musi być dodatnia, a nie równa {population_size}")
+        if precision <= 0: raise ValueError(f"Dokładność reprezentacji chromosomu musi być dodatnia, a nie równa {precision}")
+        if chrom_length <= 0: raise ValueError(f"Długość chromosomu musi być dodatnia, a nie równa {precision}")
+        if best_indv_number <= 0: raise ValueError(f"Liczba najlepszych osobników musi być dodatnia, a nie równa {precision}")
         self.a = a
         self.b = b
         self.func = func
