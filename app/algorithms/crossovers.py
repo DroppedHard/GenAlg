@@ -133,7 +133,7 @@ class UniformCrossover(Crossover):
         for pair in base:
             child1_chromosome = []
             child2_chromosome = []
-            for i in range(self.parent1.n):
+            for i in range(self.parent1.length):
                 if random.random() < self.probability:
                     child1_chromosome.append(pair[0].gens[i])
                     child2_chromosome.append(pair[1].gens[i])
@@ -171,7 +171,7 @@ class DiscreteCrossover(Crossover):
         base = list(zip(self.parent1.chromosomes, self.parent2.chromosomes))
         for pair in base:
             child_chromosome = []
-            for i in range(self.parent1.n):
+            for i in range(self.parent1.length):
                 if random.random() < self.probability:
                     child_chromosome.append(pair[0].gens[i])
                 else:
