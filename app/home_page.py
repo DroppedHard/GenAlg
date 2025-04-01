@@ -1,3 +1,5 @@
+from tkinter import messagebox
+from typing import Dict
 import customtkinter as ctk
 from app.algorithms.crossovers import AVAILABLE_CROSSOVERS
 from app.algorithms.mutation import AVAILABLE_MUTATIONS, Inversion
@@ -87,14 +89,10 @@ class HomePage(ctk.CTkFrame):
 
     def start_simulation(self):
         """Sprawdza wszystkie parametry i uruchamia symulację, jeśli są poprawne."""
-        simulation = self.simulation_config.get_values()
-        population = self.population_config.get_values()
-
-        print(
-            simulation,
-            population,
-        )
         try:
+            simulation = self.simulation_config.get_values()
+            population = self.population_config.get_values()
+
             mutation_class = next(
                 (
                     cls
@@ -103,19 +101,18 @@ class HomePage(ctk.CTkFrame):
                 ),
                 None,
             )
-            population = Population(
-                simulation["Zakres (początek)"],
-                simulation["Zakres (koniec)"],
-                func=simulation["Funkcja celu"],
-                n_of_variables=simulation["Liczba argumentów"],
-                chrom_length=population["Długość chromosomu"],
-                population_size=population["Liczność populacji"],
-                precision=population["Dokładność reprezentacji chromosomu"],
-                optimization_type=self.selection_config.get_method_instance().optimization_type,
-                best_indv_number=population["Liczba najlepszych osobników"],
-            )
-
             if mutation_class:
+                population = Population(
+                    simulation["Zakres (początek)"],
+                    simulation["Zakres (koniec)"],
+                    func=simulation["Funkcja celu"],
+                    n_of_variables=simulation["Liczba argumentów"],
+                    chrom_length=population["Długość chromosomu"],
+                    population_size=population["Liczność populacji"],
+                    precision=population["Dokładność reprezentacji chromosomu"],
+                    optimization_type=self.selection_config.get_method_instance().optimization_type,
+                    best_indv_number=population["Liczba najlepszych osobników"],
+                )
                 simulation = Simulation(
                     epochs=simulation["Liczba epok"],
                     population=population,
@@ -126,6 +123,8 @@ class HomePage(ctk.CTkFrame):
                 )
                 simulation.run()
         except KeyError as e:
-            raise ValueError(f"Brakujący parametr: {e}")
+            messagebox.showerror("Brakujący parametr", e)
         except ValueError as e:
-            raise ValueError(f"Niepoprawna wartość: {e}")
+            messagebox.showerror("Niepoprawna wartość", e)
+        except Exception as e:
+            messagebox.showerror("Coś poszło nie tak", e)

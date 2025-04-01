@@ -50,10 +50,8 @@ class Individual:
 
     def target_function(self, x_values: list):
         target_val = self.function(x_values)
-        print(f"PRECISSION {self.precission}")
         if self.precission:
             target_val = round(target_val, self.precission)
-            print(f"Target value with precision {self.precission}: {target_val}")
         return target_val
 
     def __str__(self):

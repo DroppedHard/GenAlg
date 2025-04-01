@@ -7,6 +7,7 @@ from app.components.labeled_entry import LabeledEntry
 from app.config import COL_NUM
 import benchmark_functions as bf
 from PIL import Image
+from tkinter import messagebox
 
 AVAILABLE_FUNCTIONS = [
     (bf.Hypersphere, (-10, 10)),
@@ -50,7 +51,7 @@ class SimulationConfig(ctk.CTkFrame):
             "Zakres (koniec)": "10",
             "Prawdopodobieństwo inwersji": "0.2",
             "Prawdopodobieństwo mutacji": "0.1",
-            "Prawdopodobieństwo krzyżowania (?)": "0.8",
+            # "Prawdopodobieństwo krzyżowania (?)": "0.8",
         }
         self.frame_position = {
             "row": row,
