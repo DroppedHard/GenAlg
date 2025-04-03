@@ -18,6 +18,7 @@ from app.config import (
 )
 from app.representation.population import Population
 from app.simulation import Simulation
+from app.result_page import ResultsPage
 
 
 class HomePage(ctk.CTkFrame):
@@ -122,6 +123,12 @@ class HomePage(ctk.CTkFrame):
                     mutation=mutation_class(simulation["Prawdopodobieństwo mutacji"]),
                 )
                 simulation.run()
+            while simulation.simulation_is_running:
+                pass
+            results = simulation.get_statistics()
+            result_page = ResultsPage(self, results)
+
+
         except KeyError as e:
             messagebox.showerror("Brakujący parametr", e)
         except ValueError as e:
