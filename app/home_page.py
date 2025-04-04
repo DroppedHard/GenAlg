@@ -126,8 +126,12 @@ class HomePage(ctk.CTkFrame):
             while simulation.simulation_is_running:
                 pass
             results = simulation.get_statistics()
-            result_page = ResultsPage(self, results)
 
+            for i in range(1, ROW_NUM):
+                self.grid_rowconfigure(i, weight=1)
+
+            result_page = ResultsPage(self, results)
+            result_page.grid(row=1, column=6, columnspan=COL_NUM, rowspan=ROW_NUM-2, sticky="nsew", padx=10, pady=10)
 
         except KeyError as e:
             messagebox.showerror("Brakujący parametr", e)
