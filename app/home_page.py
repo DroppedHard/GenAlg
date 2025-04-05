@@ -123,8 +123,7 @@ class HomePage(ctk.CTkFrame):
                     mutation=mutation_class(simulation["Prawdopodobieństwo mutacji"]),
                 )
                 simulation.run()
-            while simulation.simulation_is_running:
-                pass
+                
             results = simulation.get_statistics()
 
             for i in range(1, ROW_NUM):

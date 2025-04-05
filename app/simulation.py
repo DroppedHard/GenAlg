@@ -26,7 +26,6 @@ class Simulation:
         self.mutation = mutation
         self.selection = selection
         self.crossover = crossover
-        self.simulation_is_running = False
     
     def create_file(self) -> Path:
         base_dir = Path(__file__).resolve().parent.parent
@@ -44,8 +43,6 @@ class Simulation:
         return file_path
     
     def get_statistics(self):
-        if self.simulation_is_running:
-            return None
         return self.target_functions, self.duration_time
 
 
@@ -54,7 +51,6 @@ class Simulation:
         start_time = datetime.datetime.now()
         self.target_functions = []
         file_path = self.create_file()
-        self.simulation_is_running = True
         for epoch in range(self.epochs):
             individuals = self.population.population
             selected = self.selection.select(individuals)
@@ -87,4 +83,3 @@ class Simulation:
                 f.write(f"{epoch + 1} {best_individuals[0].target_function_val} {avg_target_function} {standard_deviation} \n")
         end_time = datetime.datetime.now()
         self.duration_time = end_time - start_time
-        self.simulation_is_running = False
