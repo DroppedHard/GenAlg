@@ -25,10 +25,8 @@ class Crossover:
         pass
 
     def get_parents(self) -> None:
-        self.parent1 = random.choice(self.population)
-        self.parent2 = random.choice(self.population)
-        while self.parent1 == self.parent2:
-            self.parent2 = random.choice(self.population)
+        self.parent1: Individual = random.choice(self.population)
+        self.parent2: Individual = random.choice(self.population)
 
     def crossover_population(self, population: List[Individual], best_indviduals: List[Individual]) -> list[Individual]:
         self.population = population
@@ -57,7 +55,7 @@ class SinglePointCrossover(Crossover):
 
     @staticmethod
     def getParamteres() -> List[Tuple[str]]:
-        return [("rozmiar populacji", "30")]
+        return [("rozmiar populacji", "50")]
 
     @staticmethod
     def validateParameters(whole_pop_size: int) -> bool:
@@ -86,7 +84,7 @@ class TwoPointCrossover(Crossover):
 
     @staticmethod
     def getParamteres() -> List[Tuple[str]]:
-        return [("rozmiar populacji", "30")]
+        return [("rozmiar populacji", "50")]
 
     @staticmethod
     def validateParameters(whole_pop_size) -> bool:
@@ -118,7 +116,7 @@ class UniformCrossover(Crossover):
 
     @staticmethod
     def getParamteres() -> List[Tuple[str]]:
-        return [("prawdopodobieństwo", "0.5"), ("rozmiar populacji", "30")]
+        return [("prawdopodobieństwo", "0.5"), ("rozmiar populacji", "50")]
 
     @staticmethod
     def validateParameters(probability: float, whole_pop_size: int) -> bool:
@@ -158,7 +156,7 @@ class DiscreteCrossover(Crossover):
 
     @staticmethod
     def getParamteres() -> List[Tuple[str]]:
-        return [("prawdopodobieństwo", "0.5"), ("rozmiar populacji", "30")]
+        return [("prawdopodobieństwo", "0.5"), ("rozmiar populacji", "50")]
 
     @staticmethod
     def validateParameters(probability: float, whole_pop_size: int) -> bool:

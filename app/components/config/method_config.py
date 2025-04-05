@@ -94,7 +94,10 @@ class MethodConfig(ctk.CTkFrame):
             if isinstance(entry, ctk.CTkSwitch):
                 params[name] = entry.get()
             else:
-                params[name] = float(entry.get_value())
+                if "." in entry.get_value():
+                    params[name] = float(entry.get_value())
+                else:
+                    params[name] = int(entry.get_value())
         return params
 
     def get_method_instance(self):
