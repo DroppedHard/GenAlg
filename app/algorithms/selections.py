@@ -47,8 +47,6 @@ class SelectionTheBest(Selection):
         return False
 
     def select(self, population: list[Individual]) -> List[Individual]:
-        pass
-        # i tutaj wykonujemy to sortowanie i zwracamy top jakiś % albo top liczba - do dogadania
         reverse_sort = self.optimization_type == "max"
         population = sorted(
             population,
@@ -77,15 +75,15 @@ class TournamentSelection(Selection):
     @staticmethod
     def getParamteres() -> List[Tuple[str]]:
         return [
-            ("Ilośc turniejów", "3"),
             ("Ilość osobników w grupie", "4"),
+            ("Ilośc turniejów", "2"),
             ("Typ optymalizacji", "min"),
         ]
 
     @staticmethod
     def validateParameters(
-        tournament_count: int,
         tournament_capacity: int,
+        tournament_count: int,
         optimization_type: Literal["min", "max"],
     ) -> bool:
         if (

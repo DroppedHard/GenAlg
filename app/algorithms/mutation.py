@@ -37,6 +37,7 @@ class BoundaryMutation(Mutation):
         return individual
 
 class SinglePointMutation(Mutation):
+    @staticmethod
     def getName() -> str:
         return "Mutacja Jednopunktowa"
 
@@ -49,6 +50,7 @@ class SinglePointMutation(Mutation):
 
 
 class TwoPointMutation(Mutation):
+    @staticmethod
     def getName() -> str:
         return "Mutacja Dwupunktowa"
 
