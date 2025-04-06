@@ -5,6 +5,7 @@ from app.representation.population import Population
 from typing import List, Tuple
 from copy import deepcopy
 
+
 class Crossover:
     def __init__(self):
         pass
@@ -28,7 +29,9 @@ class Crossover:
         self.parent1: Individual = random.choice(self.population)
         self.parent2: Individual = random.choice(self.population)
 
-    def crossover_population(self, population: List[Individual], best_indviduals: List[Individual]) -> list[Individual]:
+    def crossover_population(
+        self, population: List[Individual], best_indviduals: List[Individual]
+    ) -> list[Individual]:
         self.population = population
 
         size = self.whole_pop_size - len(best_indviduals)
@@ -43,7 +46,8 @@ class Crossover:
             for child in children:
                 new_population.append(child)
                 actual_size += 1
-        return new_population  
+        return new_population
+
 
 class SinglePointCrossover(Crossover):
     def __init__(self, whole_pop_size: int) -> None:
@@ -55,7 +59,7 @@ class SinglePointCrossover(Crossover):
 
     @staticmethod
     def getParamteres() -> List[Tuple[str]]:
-        return [("rozmiar populacji", "50")]
+        return [("Rozmiar populacji", "50")]
 
     @staticmethod
     def validateParameters(whole_pop_size: int) -> bool:
@@ -67,13 +71,20 @@ class SinglePointCrossover(Crossover):
         point = random.randint(1, self.parent1.length - 1)
         base = list(zip(self.parent1.chromosomes, self.parent2.chromosomes))
 
-        child1_chromosomes = [Chromosome(pair[0].length, pair[0].gens[:point] + pair[1].gens[point:]) for pair in base]
-        child2_chromosomes = [Chromosome(pair[0].length, pair[0].gens[point:] + pair[1].gens[:point]) for pair in base]
+        child1_chromosomes = [
+            Chromosome(pair[0].length, pair[0].gens[:point] + pair[1].gens[point:])
+            for pair in base
+        ]
+        child2_chromosomes = [
+            Chromosome(pair[0].length, pair[0].gens[point:] + pair[1].gens[:point])
+            for pair in base
+        ]
 
-        child1 = Individual(parent = self.parent1, chromosomes=child1_chromosomes)
-        child2 = Individual(parent = self.parent2, chromosomes=child2_chromosomes)
+        child1 = Individual(parent=self.parent1, chromosomes=child1_chromosomes)
+        child2 = Individual(parent=self.parent2, chromosomes=child2_chromosomes)
         return [child1, child2]
-    
+
+
 class TwoPointCrossover(Crossover):
     def __init__(self, whole_pop_size: int) -> None:
         self.whole_pop_size = whole_pop_size
@@ -84,27 +95,44 @@ class TwoPointCrossover(Crossover):
 
     @staticmethod
     def getParamteres() -> List[Tuple[str]]:
-        return [("rozmiar populacji", "50")]
+        return [("Rozmiar populacji", "50")]
 
     @staticmethod
     def validateParameters(whole_pop_size) -> bool:
         if whole_pop_size < 0:
             return False
         return True
-    
+
     def crossover(self) -> list[Individual]:
         point1 = random.randint(1, self.parent1.length - 2)
         point2 = random.randint(point1 + 1, self.parent1.length - 1)
 
         base = list(zip(self.parent1.chromosomes, self.parent2.chromosomes))
 
-        child1_chromosomes = [Chromosome(pair[0].length, pair[0].gens[:point1] + pair[1].gens[point1:point2] + pair[0].gens[point2:]) for pair in base]
-        child2_chromosomes = [Chromosome(pair[1].length, pair[1].gens[:point1] + pair[0].gens[point1:point2] + pair[1].gens[point2:]) for pair in base]
+        child1_chromosomes = [
+            Chromosome(
+                pair[0].length,
+                pair[0].gens[:point1]
+                + pair[1].gens[point1:point2]
+                + pair[0].gens[point2:],
+            )
+            for pair in base
+        ]
+        child2_chromosomes = [
+            Chromosome(
+                pair[1].length,
+                pair[1].gens[:point1]
+                + pair[0].gens[point1:point2]
+                + pair[1].gens[point2:],
+            )
+            for pair in base
+        ]
 
-        child1 = Individual(parent = self.parent1, chromosomes=child1_chromosomes)
-        child2 = Individual(parent = self.parent2, chromosomes=child2_chromosomes)
+        child1 = Individual(parent=self.parent1, chromosomes=child1_chromosomes)
+        child2 = Individual(parent=self.parent2, chromosomes=child2_chromosomes)
         return [child1, child2]
-    
+
+
 class UniformCrossover(Crossover):
     def __init__(self, probability: float, whole_pop_size: int) -> None:
         self.probability = probability
@@ -116,14 +144,14 @@ class UniformCrossover(Crossover):
 
     @staticmethod
     def getParamteres() -> List[Tuple[str]]:
-        return [("prawdopodobieństwo", "0.5"), ("rozmiar populacji", "50")]
+        return [("prawdopodobieństwo", "0.5"), ("Rozmiar populacji", "50")]
 
     @staticmethod
     def validateParameters(probability: float, whole_pop_size: int) -> bool:
         if probability < 0 or probability > 1 or whole_pop_size < 0:
             return False
         return True
-        
+
     def crossover(self) -> list[Individual]:
         child1_chromosomes = []
         child2_chromosomes = []
@@ -140,10 +168,10 @@ class UniformCrossover(Crossover):
                     child2_chromosome.append(pair[0].gens[i])
             child1_chromosomes.append(Chromosome(pair[0].length, child1_chromosome))
             child2_chromosomes.append(Chromosome(pair[1].length, child2_chromosome))
-        child1 = Individual(parent = self.parent1, chromosomes=child1_chromosomes)
-        child2 = Individual(parent = self.parent2, chromosomes=child2_chromosomes)
+        child1 = Individual(parent=self.parent1, chromosomes=child1_chromosomes)
+        child2 = Individual(parent=self.parent2, chromosomes=child2_chromosomes)
         return [child1, child2]
-    
+
 
 class DiscreteCrossover(Crossover):
     def __init__(self, probability: float, whole_pop_size: int) -> None:
@@ -156,14 +184,14 @@ class DiscreteCrossover(Crossover):
 
     @staticmethod
     def getParamteres() -> List[Tuple[str]]:
-        return [("prawdopodobieństwo", "0.5"), ("rozmiar populacji", "50")]
+        return [("prawdopodobieństwo", "0.5"), ("Rozmiar populacji", "50")]
 
     @staticmethod
     def validateParameters(probability: float, whole_pop_size: int) -> bool:
         if probability < 0 or probability > 1 or whole_pop_size < 0:
             return False
         return True
-        
+
     def crossover(self) -> list[Individual]:
         child_chromosomes = []
         base = list(zip(self.parent1.chromosomes, self.parent2.chromosomes))
@@ -175,8 +203,8 @@ class DiscreteCrossover(Crossover):
                 else:
                     child_chromosome.append(pair[1].gens[i])
             child_chromosomes.append(Chromosome(pair[0].length, child_chromosome))
-        child = Individual(parent = self.parent1, chromosomes=child_chromosomes)
-        return [child]   
+        child = Individual(parent=self.parent1, chromosomes=child_chromosomes)
+        return [child]
 
 
 AVAILABLE_CROSSOVERS: List[Crossover] = [
