@@ -2,36 +2,39 @@ from typing import Dict
 import customtkinter as ctk
 from matplotlib import pyplot as plt
 import numpy as np
+from app.algorithms.function_wrapper import FunctionWrapper
 from app.components.labeled_combo import LabeledComboBox
 from app.components.labeled_entry import LabeledEntry
 from app.config import COL_NUM
 import benchmark_functions as bf
 from PIL import Image
-from tkinter import messagebox
+from opfunu.cec_based import F12010
+
 
 AVAILABLE_FUNCTIONS = [
-    (bf.Hypersphere, (-10, 10)),
-    (bf.Hyperellipsoid, (-60, 60)),
-    (bf.Schwefel, (-400, 400)),
-    (bf.Ackley, (-30, 30)),
-    (bf.Michalewicz, (0, 3)),
-    (bf.Rastrigin, (-6, 6)),
-    (bf.Rosenbrock, (-3, 3)),
-    (bf.DeJong3, (-5, 5)),
-    (bf.DeJong5, (-70, 70)),
-    # (bf.MartinGaddy, (-25, 25)), # TODO n_dimensioons tutaj nie przyjmuje
-    (bf.Griewank, (-700, 700)),
-    # (bf.Easom, (-100, 100)), # TODO ta funkcja tylko 2 wymiarowa
-    (bf.GoldsteinAndPrice, (-2, 2)),
-    (bf.PichenyGoldsteinAndPrice, (-2, 2)),
-    (bf.StyblinskiTang, (-5, 5)),
-    (bf.McCormick, (-5, 5)),
-    (bf.Rana, (-500, 500)),
-    (bf.EggHolder, (-500, 500)),
-    (bf.Keane, (0, 10)),
-    (bf.Schaffer2, (-100, 100)),
-    (bf.Himmelblau, (-5, 5)),
-    (bf.PitsAndHoles, (-25, 25)),
+    FunctionWrapper(bf.Hypersphere, bounds=(-10, 10)),
+    FunctionWrapper(F12010, dimensions=[10, 20, 30, 50, 100]),
+    FunctionWrapper(bf.Hyperellipsoid, bounds=(-60, 60)),
+    FunctionWrapper(bf.Schwefel, bounds=(-400, 400)),
+    FunctionWrapper(bf.Ackley, bounds=(-30, 30)),
+    FunctionWrapper(bf.Michalewicz, bounds=(0, 3)),
+    FunctionWrapper(bf.Rastrigin, bounds=(-6, 6)),
+    FunctionWrapper(bf.Rosenbrock, bounds=(-3, 3)),
+    FunctionWrapper(bf.DeJong3, bounds=(-5, 5)),
+    FunctionWrapper(bf.DeJong5, bounds=(-70, 70), is_exactly_2d=True),
+    FunctionWrapper(bf.MartinGaddy, bounds=(-25, 25), is_exactly_2d=True),
+    FunctionWrapper(bf.Griewank, bounds=(-700, 700)),
+    FunctionWrapper(bf.Easom, bounds=(-10, 10), is_exactly_2d=True),
+    FunctionWrapper(bf.GoldsteinAndPrice, bounds=(-2, 2), is_exactly_2d=True),
+    FunctionWrapper(bf.PichenyGoldsteinAndPrice, bounds=(-2, 2), is_exactly_2d=True),
+    FunctionWrapper(bf.StyblinskiTang, bounds=(-5, 5)),
+    FunctionWrapper(bf.McCormick, bounds=(-5, 5), is_exactly_2d=True),
+    FunctionWrapper(bf.Rana, bounds=(-500, 500)),
+    FunctionWrapper(bf.EggHolder, bounds=(-500, 500)),
+    FunctionWrapper(bf.Keane, bounds=(0, 10)),
+    FunctionWrapper(bf.Schaffer2, bounds=(-100, 100), is_exactly_2d=True),
+    FunctionWrapper(bf.Himmelblau, bounds=(-5, 5), is_exactly_2d=True),
+    FunctionWrapper(bf.PitsAndHoles, bounds=(-25, 25)),
 ]
 
 
@@ -42,10 +45,12 @@ class SimulationConfig(ctk.CTkFrame):
         self.current_function = None
         self.image_path = "assets/tmp/function_plot.png"
 
-        self.available_functions = {fn[0].__name__: fn for fn in AVAILABLE_FUNCTIONS}
+        self.available_functions: Dict[str, FunctionWrapper] = {
+            fn.__name__: fn for fn in AVAILABLE_FUNCTIONS
+        }
 
         self.config_values = {
-            "Liczba argumentów": "2",
+            "Liczba argumentów": "10",
             "Liczba epok": "1000",
             "Zakres (początek)": "-10",
             "Zakres (koniec)": "10",
@@ -102,15 +107,14 @@ class SimulationConfig(ctk.CTkFrame):
         selected_function_name = self.function_combo.get_value()
 
         if selected_function_name in self.available_functions:
-            (func, limit) = self.available_functions[selected_function_name]
-            self.current_function = func(n_dimensions=2)
-
+            func = self.available_functions[selected_function_name]
             try:
+                self.current_function = func(n_dimensions=2)
                 fig = plt.figure(figsize=(4, 4))
                 ax = fig.add_subplot(111, projection="3d")
 
-                x = np.linspace(*limit, 100)
-                y = np.linspace(*limit, 100)
+                x = np.linspace(*func.get_bounds(), 100)
+                y = np.linspace(*func.get_bounds(), 100)
                 X, Y = np.meshgrid(x, y)
 
                 Z = np.array(
@@ -139,15 +143,18 @@ class SimulationConfig(ctk.CTkFrame):
                 )
                 self.image_label.configure(image=function_image, text="")
                 self.image_label.image = function_image
-            except Exception as e:
-                self.image_label.configure(text=f"Błąd generowania: {e}")
+
+            except ValueError as e:
+                self.image_label.configure(text=f"Brak podglądu funkcji", image="")
+                if hasattr(self.image_label, "image"):
+                    del self.image_label.image
 
     def get_selected_function(self):
         """Zwraca wybraną funkcję celu"""
         function_name = self.function_combo.get_value()
 
         if function_name in self.available_functions:
-            return self.available_functions[function_name][0]
+            return self.available_functions[function_name]
         else:
             raise ValueError("Nieprawidłowa funkcja celu")
 
