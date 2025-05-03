@@ -34,7 +34,7 @@ AVAILABLE_FUNCTIONS = [
     FunctionWrapper(bf.Keane, bounds=(0, 10)),
     FunctionWrapper(bf.Schaffer2, bounds=(-100, 100), is_exactly_2d=True),
     FunctionWrapper(bf.Himmelblau, bounds=(-5, 5), is_exactly_2d=True),
-    FunctionWrapper(bf.PitsAndHoles, bounds=(-25, 25)),
+    FunctionWrapper(bf.PitsAndHoles, bounds=(-25, 25), is_exactly_2d=True),
 ]
 
 

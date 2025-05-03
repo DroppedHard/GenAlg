@@ -57,7 +57,7 @@ class TwoPointMutation(Mutation):
     def mutate(self, individual: Individual):
         for chromosome in individual.chromosomes:
             if self.should_mutate():
-                idx1, idx2 = random.sample(range(len(individual.chromosomes)), 2)
+                idx1, idx2 = random.sample(range(len(chromosome.gens)), 2)
                 chromosome.gens[idx1] ^= 1
                 chromosome.gens[idx2] ^= 1
         return individual
