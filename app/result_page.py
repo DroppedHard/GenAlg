@@ -71,7 +71,7 @@ class ResultsPage(ctk.CTkFrame):
             self, text="📊 Wyniki symulacji", font=("Arial", 16, "bold")
         ).grid(row=0, column=0, columnspan=COL_NUM, pady=5)
 
-        args = [round(arg, 4) for arg in self.statistics[0][1]]
+        args = [round(arg, 4) for arg in self.statistics[-1][1]]
 
 
         text_duration = (
