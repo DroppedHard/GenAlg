@@ -61,6 +61,32 @@ class TwoPointMutation(Mutation):
                 chromosome.gens[idx1] ^= 1
                 chromosome.gens[idx2] ^= 1
         return individual
+    
+class GaussianMutation(Mutation):
+    @staticmethod
+    def getName() -> str:
+        return "Mutacja Gaussowska"
+
+    def mutate(self, individual: Individual):
+        for idx, val in enumerate(individual.real_values):
+            if self.should_mutate():
+                mutation_value = random.gauss(0, 1) * self.mutation_rate
+                while mutation_value + val < individual.a or mutation_value + val > individual.b:
+                    mutation_value = random.gauss(0, 1) * self.mutation_rate
+                individual.real_values[idx] += mutation_value
+        return individual
+    
+class UniformMutation(Mutation):
+    @staticmethod
+    def getName() -> str:
+        return "Mutacja Równomierna"
+
+    def mutate(self, individual: Individual):
+        if self.should_mutate():
+            idx = random.randint(0, len(individual.real_values) - 1)
+            mutation = random.uniform(individual.a, individual.b)
+            individual.real_values[idx] = mutation
+        return individual
 
 class Inversion:
     def __init__(self, probability: float = 0.1):
@@ -85,4 +111,9 @@ AVAILABLE_MUTATIONS: List[Mutation] = [
     BoundaryMutation,
     SinglePointMutation,
     TwoPointMutation,
+]
+
+REAL_REPRESENTATION_MUTATIONS: List[Mutation] = [
+    GaussianMutation,
+    UniformMutation,
 ]
