@@ -62,8 +62,11 @@ class Simulation:
             mutated = list(
                 map(lambda ind: self.mutation.mutate(ind), pop_after_crossed)
             )
-            inversed = list(map(lambda ind: self.inversion.inverse(ind), mutated))
-            self.population.new_population(inversed)
+            if not self.population.real_representation:
+                inversed = list(map(lambda ind: self.inversion.inverse(ind), mutated))
+                self.population.new_population(inversed)
+            else:
+                self.population.new_population(mutated)
 
             avg_target_function = sum(
                 [ind.target_function_val for ind in self.population.population]
@@ -77,9 +80,18 @@ class Simulation:
                 / len(self.population.population)
             ) ** 0.5
 
-            self.target_functions.append((epoch+1, best_individuals[0].decodes, best_individuals[0].target_function_val, avg_target_function, standard_deviation))
+            if self.population.real_representation:
+                self.target_functions.append(
+                    (epoch + 1, best_individuals[0].real_values, best_individuals[0].target_function_val, avg_target_function, standard_deviation)
+                )
+            else:
+                self.target_functions.append((epoch+1, best_individuals[0].decodes, best_individuals[0].target_function_val, avg_target_function, standard_deviation))
 
             with file_path.open("a", encoding="utf-8") as f:
-                f.write(f"{epoch + 1} {best_individuals[0].target_function_val} {avg_target_function} {standard_deviation} \n")
+                # f.write(f"{epoch + 1} {best_individuals[0].target_function_val} {avg_target_function} {standard_deviation} {best_individuals[0].decodes}\n")
+                f.write(f"{epoch + 1} {best_individuals[0].target_function_val} {avg_target_function} {standard_deviation}\n")
         end_time = datetime.datetime.now()
         self.duration_time = end_time - start_time
+
+        with file_path.open("a", encoding="utf-8") as f:
+            f.write(f"Czas trwania symulacji: {self.duration_time.total_seconds()}s\n")

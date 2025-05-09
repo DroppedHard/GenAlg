@@ -1,3 +1,4 @@
+import datetime
 import customtkinter as ctk
 import matplotlib.pyplot as plt
 from matplotlib.figure import Figure
@@ -66,12 +67,18 @@ class ResultsPage(ctk.CTkFrame):
         canvas_widget.grid(row=2, column=0, columnspan=COL_NUM, rowspan=2, sticky="nsew", padx=20, pady=20)  # Use rowspan to fill space
         canvas.draw()
 
+        # same plots to file
+        import os
+        results_dir = "results"
+        os.makedirs(results_dir, exist_ok=True)
+        fig.savefig(f"{results_dir}/{datetime.datetime.now().strftime('%Y-%m-%d_%H-%M-%S')}.png")
+
     def render(self):
         ctk.CTkLabel(
             self, text="📊 Wyniki symulacji", font=("Arial", 16, "bold")
         ).grid(row=0, column=0, columnspan=COL_NUM, pady=5)
 
-        args = [round(arg, 4) for arg in self.statistics[0][1]]
+        args = [round(arg, 4) for arg in self.statistics[-1][1]]
 
 
         text_duration = (
