@@ -1,3 +1,4 @@
+import datetime
 import customtkinter as ctk
 import matplotlib.pyplot as plt
 from matplotlib.figure import Figure
@@ -65,6 +66,12 @@ class ResultsPage(ctk.CTkFrame):
         canvas_widget = canvas.get_tk_widget()
         canvas_widget.grid(row=2, column=0, columnspan=COL_NUM, rowspan=2, sticky="nsew", padx=20, pady=20)  # Use rowspan to fill space
         canvas.draw()
+
+        # same plots to file
+        import os
+        results_dir = "results"
+        os.makedirs(results_dir, exist_ok=True)
+        fig.savefig(f"{results_dir}/{datetime.datetime.now().strftime('%Y-%m-%d_%H-%M-%S')}.png")
 
     def render(self):
         ctk.CTkLabel(

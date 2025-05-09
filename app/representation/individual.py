@@ -1,5 +1,6 @@
 from app.representation.chromosome import Chromosome
 from typing import List
+import random
 
 
 class Individual:
@@ -13,19 +14,25 @@ class Individual:
         precission: int = None,
         chromosomes: List[int] = None,
         parent=None,
+        real_representation: bool = False,
+        real_values: List[float] = None,
     ):
         """
         Initialize an Individual either directly or from a parent.
         """
         if parent:
-            # Initialize from parent
+            # Initialize from parent with real representation
             self.a = parent.a
             self.b = parent.b
             self.function = parent.function
             self.length = parent.length
             self.n = parent.n
-            self.chromosomes = chromosomes
             self.precission = parent.precission
+            if real_representation:
+                self.real_values = real_values
+            else:
+                self.chromosomes = chromosomes
+                self.decodes = self.decode()
         else:
             # Initialize directly
             self.a = a
@@ -34,10 +41,14 @@ class Individual:
             self.length = length
             self.n = n
             self.precission = precission
-            self.chromosomes = [Chromosome(length) for _ in range(n)]
+            if real_representation:
+                self.real_values = [random.uniform(a, b) for _ in range(n)]
+            else:
+                self.chromosomes = [Chromosome(length) for _ in range(n)]
+                self.decodes = self.decode()
 
-        self.decodes = self.decode()
-        self.target_function_val = self.target_function(self.decodes)
+
+        self.target_function_val = self.target_function(self.real_values if real_representation else self.decodes) 
 
     def decode(self) -> int:
         all_values = []
@@ -55,7 +66,11 @@ class Individual:
         return target_val
 
     def __str__(self):
+        if self.real_values:
+            return f"Individual with {self.n} real values: {self.real_values} target func: {self.target_function_val}"
         return f"Individual with {self.n} chromosomes: {self.chromosomes} target func: {self.target_function_val}"
 
     def __repr__(self):
+        if self.real_values:
+            return f"Individual with {self.n} real values: {self.real_values} target func: {self.target_function_val}"
         return f"Individual with {self.n} chromosomes: {self.chromosomes} target func: {self.target_function_val}"

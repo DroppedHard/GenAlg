@@ -1,6 +1,6 @@
 from typing import Dict, ClassVar
 import customtkinter as ctk
-from app.algorithms.crossovers import AVAILABLE_CROSSOVERS
+from app.algorithms.crossovers import AVAILABLE_CROSSOVERS, REAL_REPRESENTATION_CROSSOVERS
 from app.algorithms.selections import AVAILABLE_SELECTIONS
 from app.components.labeled_entry import LabeledEntry
 from app.components.labeled_combo import LabeledComboBox
@@ -20,6 +20,7 @@ class MethodConfig(ctk.CTkFrame):
         super().__init__(master, **kwargs)
         self.methods_dict = methods_dict
         self.param_entries = {}
+        self.hidden_entries = {}
 
         self.position = {
             "row": row,
@@ -43,6 +44,11 @@ class MethodConfig(ctk.CTkFrame):
         self.frame.pack(pady=5, fill="x")
 
         self.update_params()
+
+    def add_hidden_entry(self, label, value):
+        print("Added entry")
+        print(label, value)
+        self.hidden_entries[label] = value
 
     def update_params(self, event=None):
         """Aktualizuje dynamiczne pola na podstawie wybranej metody."""
@@ -90,6 +96,11 @@ class MethodConfig(ctk.CTkFrame):
     def get_params(self):
         """Zwraca słownik parametrów wybranej metody."""
         params = {}
+        for label, value in self.hidden_entries.items():
+            params[label] = value.get()
+
+        print("Hidden entries:", params)
+
         for name, entry in self.param_entries.items():
             if isinstance(entry, ctk.CTkSwitch):
                 params[name] = entry.get()
@@ -98,6 +109,7 @@ class MethodConfig(ctk.CTkFrame):
                     params[name] = float(entry.get_value())
                 else:
                     params[name] = int(entry.get_value())
+        print(params)
         return params
 
     def get_method_instance(self):
@@ -116,12 +128,13 @@ class MethodConfig(ctk.CTkFrame):
             method_class = next(
                 (
                     cls
-                    for cls in AVAILABLE_SELECTIONS + AVAILABLE_CROSSOVERS
+                    for cls in AVAILABLE_SELECTIONS + AVAILABLE_CROSSOVERS + REAL_REPRESENTATION_CROSSOVERS
                     if cls.getName() == selected_method
                 ),
                 None,
             )
             if method_class:
+                print(f"Tworzenie instancji metody: {selected_method} z parametrami: {params}")
                 return method_class(*params.values())
             else:
                 raise ValueError(f"Nieznana klasa dla metody: {selected_method}")
