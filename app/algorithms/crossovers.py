@@ -35,7 +35,6 @@ class Crossover:
                 return False
         return True
 
-
     def crossover_population(
         self, population: List[Individual], best_indviduals: List[Individual]
     ) -> list[Individual]:
@@ -213,6 +212,7 @@ class DiscreteCrossover(Crossover):
         child = Individual(parent=self.parent1, chromosomes=child_chromosomes)
         return [child]
 
+
 class ArithmeticalCrossover(Crossover):
     def __init__(self, probability: float, whole_pop_size: int) -> None:
         self.probability = probability
@@ -241,14 +241,26 @@ class ArithmeticalCrossover(Crossover):
             for val1, val2 in zip(self.parent1.real_values, self.parent2.real_values):
                 child1_val.append(alpha * val1 + (1 - alpha) * val2)
                 child2_val.append((1 - alpha) * val1 + alpha * val2)
-            child1 = Individual(parent=self.parent1, real_values=child1_val, real_representation=True)
-            child2 = Individual(parent=self.parent2, real_values=child2_val, real_representation=True)
-            all_children_valid = self.validate_real_values(child1) and self.validate_real_values(child2)
+            child1 = Individual(
+                parent=self.parent1, real_values=child1_val, real_representation=True
+            )
+            child2 = Individual(
+                parent=self.parent2, real_values=child2_val, real_representation=True
+            )
+            all_children_valid = self.validate_real_values(
+                child1
+            ) and self.validate_real_values(child2)
 
         return [child1, child2]
-    
+
+
 class LinearCrossover(Crossover):
-    def __init__(self, probability: float, whole_pop_size: int, optimization_type: Literal["min", "max"]) -> None:
+    def __init__(
+        self,
+        probability: float,
+        whole_pop_size: int,
+        optimization_type: Literal["min", "max"],
+    ) -> None:
         self.probability = probability
         self.whole_pop_size = whole_pop_size
         self.optimization_type = optimization_type
@@ -259,37 +271,61 @@ class LinearCrossover(Crossover):
 
     @staticmethod
     def getParamteres() -> List[Tuple[str]]:
-        return [("prawdopodobieństwo", "0.5"), ("Rozmiar populacji", "50")]
+        return [
+            ("prawdopodobieństwo", "0.5"),
+            ("Rozmiar populacji", "50"),
+            ("Typ optymalizacji", "min"),
+        ]
 
     @staticmethod
-    def validateParameters(probability: float, whole_pop_size: int) -> bool:
-        if probability < 0 or probability > 1 or whole_pop_size < 0:
+    def validateParameters(
+        probability: float,
+        whole_pop_size: int,
+        optimization_type: Literal["min", "max"],
+    ) -> bool:
+        if (
+            probability < 0
+            or probability > 1
+            or whole_pop_size < 0
+            or optimization_type not in ["min", "max"]
+        ):
             return False
         return True
 
     def crossover(self) -> list[Individual]:
-        const1 = 1/2
-        const2 = 3/2
+        const1 = 1 / 2
+        const2 = 3 / 2
         child1_val = []
         child2_val = []
         child3_val = []
         for val1, val2 in zip(self.parent1.real_values, self.parent2.real_values):
-            child1_val.append(const1 * val1 + const1* val2)
-            child2_val.append(const2 * val1 - const1* val2)
-            child3_val.append(-const1 * val1 + const2* val2)
+            child1_val.append(const1 * val1 + const1 * val2)
+            child2_val.append(const2 * val1 - const1 * val2)
+            child3_val.append(-const1 * val1 + const2 * val2)
 
-        child1 = Individual(parent=self.parent1, real_values=child1_val, real_representation=True)
-        child2 = Individual(parent=self.parent2, real_values=child2_val, real_representation=True)
-        child3 = Individual(parent=self.parent1, real_values=child3_val, real_representation=True)
+        child1 = Individual(
+            parent=self.parent1, real_values=child1_val, real_representation=True
+        )
+        child2 = Individual(
+            parent=self.parent2, real_values=child2_val, real_representation=True
+        )
+        child3 = Individual(
+            parent=self.parent1, real_values=child3_val, real_representation=True
+        )
         get_children = [child1, child2, child3]
-        get_valid_children = [child for child in get_children if self.validate_real_values(child)]
+        get_valid_children = [
+            child for child in get_children if self.validate_real_values(child)
+        ]
 
         if len(get_valid_children) > 2:
-            get_valid_children.sort(key=lambda x: x.target_function_val, reverse=(True if self.optimization_type == "max" else False))
+            get_valid_children.sort(
+                key=lambda x: x.target_function_val,
+                reverse=(True if self.optimization_type == "max" else False),
+            )
             return get_valid_children[:2]
-        
-        return get_valid_children            
-        
+
+        return get_valid_children
+
 
 class AlfaMixCrossover(Crossover):
     def __init__(self, probability: float, whole_pop_size: int, alpha: float) -> None:
@@ -303,11 +339,23 @@ class AlfaMixCrossover(Crossover):
 
     @staticmethod
     def getParamteres() -> List[Tuple[str]]:
-        return [("prawdopodobieństwo", "0.5"), ("Rozmiar populacji", "50"), ("Parametr alfa", "0.5")]
+        return [
+            ("prawdopodobieństwo", "0.5"),
+            ("Rozmiar populacji", "50"),
+            ("Parametr alfa", "0.5"),
+        ]
 
     @staticmethod
-    def validateParameters(probability: float, whole_pop_size: int, alpha: float) -> bool:
-        if probability < 0 or probability > 1 or whole_pop_size < 0 or alpha < 0 or alpha > 1:
+    def validateParameters(
+        probability: float, whole_pop_size: int, alpha: float
+    ) -> bool:
+        if (
+            probability < 0
+            or probability > 1
+            or whole_pop_size < 0
+            or alpha < 0
+            or alpha > 1
+        ):
             return False
         return True
 
@@ -320,16 +368,28 @@ class AlfaMixCrossover(Crossover):
             child2_val = []
             for val1, val2 in zip(self.parent1.real_values, self.parent2.real_values):
                 d = abs(val1 - val2)
-                values = [min(val1, val2) - self.alpha*d, max(val1, val2) + self.alpha*d]
+                values = [
+                    min(val1, val2) - self.alpha * d,
+                    max(val1, val2) + self.alpha * d,
+                ]
                 child1_val.append(random.uniform(values[0], values[1]))
                 child2_val.append(random.uniform(values[0], values[1]))
-            child1 = Individual(parent=self.parent1, real_values=child1_val, real_representation=True)
-            child2 = Individual(parent=self.parent2, real_values=child2_val, real_representation=True)
-            all_children_valid = self.validate_real_values(child1) and self.validate_real_values(child2)
+            child1 = Individual(
+                parent=self.parent1, real_values=child1_val, real_representation=True
+            )
+            child2 = Individual(
+                parent=self.parent2, real_values=child2_val, real_representation=True
+            )
+            all_children_valid = self.validate_real_values(
+                child1
+            ) and self.validate_real_values(child2)
         return [child1, child2]
-        
+
+
 class AlfaAndBetaMixCrossover(Crossover):
-    def __init__(self, probability: float, whole_pop_size: int, alpha: float, beta: float) -> None:
+    def __init__(
+        self, probability: float, whole_pop_size: int, alpha: float, beta: float
+    ) -> None:
         self.probability = probability
         self.whole_pop_size = whole_pop_size
         self.alpha = alpha
@@ -341,11 +401,26 @@ class AlfaAndBetaMixCrossover(Crossover):
 
     @staticmethod
     def getParamteres() -> List[Tuple[str]]:
-        return [("prawdopodobieństwo", "0.5"), ("Rozmiar populacji", "50"), ("Parametr alfa", "0.5"), ("Parametr beta", "0.5")]
+        return [
+            ("prawdopodobieństwo", "0.5"),
+            ("Rozmiar populacji", "50"),
+            ("Parametr alfa", "0.5"),
+            ("Parametr beta", "0.5"),
+        ]
 
     @staticmethod
-    def validateParameters(probability: float, whole_pop_size: int, alpha: float, beta: float) -> bool:
-        if probability < 0 or probability > 1 or whole_pop_size < 0 or alpha < 0 or alpha > 1 or beta < 0 or beta > 1:
+    def validateParameters(
+        probability: float, whole_pop_size: int, alpha: float, beta: float
+    ) -> bool:
+        if (
+            probability < 0
+            or probability > 1
+            or whole_pop_size < 0
+            or alpha < 0
+            or alpha > 1
+            or beta < 0
+            or beta > 1
+        ):
             return False
         return True
 
@@ -358,12 +433,21 @@ class AlfaAndBetaMixCrossover(Crossover):
             child2_val = []
             for val1, val2 in zip(self.parent1.real_values, self.parent2.real_values):
                 d = abs(val1 - val2)
-                values = [min(val1, val2) - self.alpha*d, max(val1, val2) + self.beta*d]
+                values = [
+                    min(val1, val2) - self.alpha * d,
+                    max(val1, val2) + self.beta * d,
+                ]
                 child1_val.append(random.uniform(values[0], values[1]))
                 child2_val.append(random.uniform(values[0], values[1]))
-            child1 = Individual(parent=self.parent1, real_values=child1_val, real_representation=True)
-            child2 = Individual(parent=self.parent2, real_values=child2_val, real_representation=True)
-            all_children_valid = self.validate_real_values(child1) and self.validate_real_values(child2)
+            child1 = Individual(
+                parent=self.parent1, real_values=child1_val, real_representation=True
+            )
+            child2 = Individual(
+                parent=self.parent2, real_values=child2_val, real_representation=True
+            )
+            all_children_valid = self.validate_real_values(
+                child1
+            ) and self.validate_real_values(child2)
         return [child1, child2]
 
 
@@ -390,8 +474,11 @@ class AverageCrossover(Crossover):
         child1_val = []
         for val1, val2 in zip(self.parent1.real_values, self.parent2.real_values):
             child1_val.append((val1 + val2) / 2)
-        child1 = Individual(parent=self.parent1, real_values=child1_val, real_representation=True)
+        child1 = Individual(
+            parent=self.parent1, real_values=child1_val, real_representation=True
+        )
         return [child1]
+
 
 AVAILABLE_CROSSOVERS: List[Crossover] = [
     SinglePointCrossover,
