@@ -6,22 +6,15 @@ import benchmark_functions as bf
 import numpy as np
 from mutations import gauss_mutation
 from crossovers import arithmetic_crossover, linear_crossover, alpha_mix_crossover, alpha_beta_mix_crossover, average_crossover
+import matplotlib.pyplot as plt
+import time
 
 #Konfiguracja algorytmu genetycznego
 
-num_genes = 3
-func = bf.Ackley(n_dimensions=num_genes)
+num_genes = 10
+func = bf.Hypersphere(num_genes)
 
-num_generations = 100
-sol_per_pop = 80
-num_parents_mating = 50
-init_range_low = -32.768
-init_range_high = 32.768
-mutation_num_genes = 1
-parent_selection_type = "rws"
-crossover_type = "two_points"
-mutation_type = "random"
-num_gens_per_variable = 20
+binary_representation = True
 
 function_values = []
 mean_function_values = []
@@ -47,25 +40,31 @@ def decode(individual, var_n, var_range):
     return decoded
 
 def fitness_func(ga_instance, solution, solution_idx):
-    # Decode the binary representation to real values
-    decoded_solution = decode(solution, var_n=num_genes, var_range=(init_range_low, init_range_high))
-    
-    # Evaluate the fitness using the decoded solution
-    fitness = func(decoded_solution)
+    if binary_representation:
+        decoded_solution = decode(solution, var_n=num_genes, var_range=(init_range_low, init_range_high))
+        fitness = func(decoded_solution)
+    else:
+        fitness = func(solution)
     return 1. / fitness
 
+
 fitness_function = fitness_func
-num_generations = 10
+num_gens_per_variable = 20
+num_generations = 100
 sol_per_pop = 80
 num_parents_mating = 50
-#boundary = func.suggested_bounds() #możemy wziąć stąd zakresy
-init_range_low = -32.768
-init_range_high = 32.768
+boundary = func.suggested_bounds()
+init_range_low = boundary[0][0]
+init_range_high = boundary[1][0]
 mutation_num_genes = 1
 parent_selection_type = "tournament"
-crossover_type = "uniform"
-mutation_type = "random"
 
+if binary_representation:
+    crossover_type = "uniform"
+    mutation_type = "swap"
+else:
+    crossover_type = linear_crossover
+    mutation_type = gauss_mutation
 
 #Konfiguracja logowania
 
@@ -81,32 +80,33 @@ logger.addHandler(console_handler)
 
 
 def on_generation(ga_instance):
-    ga_instance.logger.info("Generation = {generation}".format(generation=ga_instance.generations_completed))
     solution, solution_fitness, solution_idx = ga_instance.best_solution(pop_fitness=ga_instance.last_generation_fitness)
-    ga_instance.logger.info("Best    = {fitness}".format(fitness=1./solution_fitness))
-    ga_instance.logger.info("Individual    = {solution}".format(solution=repr(solution)))
+    if ga_instance.generations_completed % 100 == 0:
 
-    real_function_value = func(decode(solution, var_n=num_genes, var_range=(init_range_low, init_range_high)))
+        ga_instance.logger.info("Generation = {generation}".format(generation=ga_instance.generations_completed))
+        ga_instance.logger.info("Best    = {fitness}".format(fitness=1./solution_fitness))
+        ga_instance.logger.info("Individual    = {solution}".format(solution=repr(solution)))
+
+    real_function_value = func(decode(solution, var_n=num_genes, var_range=(init_range_low, init_range_high))) if binary_representation else func(solution)
     function_values.append(real_function_value)
     mean_function_values.append(numpy.mean(function_values))
     std_function_values.append(numpy.std(function_values))
 
     tmp = [1./x for x in ga_instance.last_generation_fitness] #ponownie odwrotność by zrobić sobie dobre statystyki
 
-    ga_instance.logger.info("Min    = {min}".format(min=numpy.min(tmp)))
-    ga_instance.logger.info("Max    = {max}".format(max=numpy.max(tmp)))
-    ga_instance.logger.info("Average    = {average}".format(average=numpy.average(tmp)))
-    ga_instance.logger.info("Std    = {std}".format(std=numpy.std(tmp)))
-    ga_instance.logger.info("\r\n")
+    if ga_instance.generations_completed % 100 == 0:
+        ga_instance.logger.info("Min    = {min}".format(min=numpy.min(tmp)))
+        ga_instance.logger.info("Max    = {max}".format(max=numpy.max(tmp)))
+        ga_instance.logger.info("Average    = {average}".format(average=numpy.average(tmp)))
+        ga_instance.logger.info("Std    = {std}".format(std=numpy.std(tmp)))
+        ga_instance.logger.info("\r\n")
 
 
 def plots():
 
-    best = ga_instance.best_solution()
     solution, solution_fitness, solution_idx = ga_instance.best_solution()
     print("Parameters of the best solution : {solution}".format(solution=solution))
     print("Fitness value of the best solution = {solution_fitness}".format(solution_fitness=1./solution_fitness))
-
 
     # sztuczka: odwracamy my narysował nam się oczekiwany wykres dla problemu minimalizacji
     ga_instance.best_solutions_fitness = [1. / x for x in ga_instance.best_solutions_fitness]
@@ -124,37 +124,61 @@ def plots():
     plt.tight_layout()
     plt.show()
 
+def binary_simulation():
+    ga_instance = pygad.GA(num_generations=num_generations,
+            sol_per_pop=sol_per_pop,
+            num_parents_mating=num_parents_mating,
+            num_genes=num_genes*num_gens_per_variable,
+            gene_space=[0, 1],
+            fitness_func=fitness_func,
+            mutation_percent_genes = 10,
+            mutation_num_genes=mutation_num_genes,
+            parent_selection_type=parent_selection_type,
+            crossover_type=crossover_type,
+            mutation_type=mutation_type,
+            keep_elitism= 1,
+            K_tournament=3,
+            random_mutation_max_val=init_range_high,
+            random_mutation_min_val=init_range_low,
+            logger=logger,
+            on_generation=on_generation,
+            parallel_processing=['thread', 4],
+            gene_type=int, 
+            save_solutions=True,
+            init_range_high=2,
+            init_range_low=0,)
+    
+    return ga_instance
 
+def real_simulation():
+    ga_instance = pygad.GA(num_generations=num_generations,
+            sol_per_pop=sol_per_pop,
+            num_parents_mating=num_parents_mating,
+            num_genes=num_genes,
+            fitness_func=fitness_func,
+            mutation_percent_genes = 10,
+            mutation_num_genes=mutation_num_genes,
+            parent_selection_type=parent_selection_type,
+            crossover_type=crossover_type,
+            mutation_type=mutation_type,
+            keep_elitism= 1,
+            K_tournament=3,
+            random_mutation_max_val=init_range_high,
+            random_mutation_min_val=init_range_low,
+            logger=logger,
+            on_generation=on_generation,
+            parallel_processing=['thread', 4],
+            gene_type=float, 
+            save_solutions=True)
+    
+    return ga_instance
 
+ga_instance = real_simulation() if not binary_representation else binary_simulation()
 
-
-
-ga_instance = pygad.GA(num_generations=num_generations,
-          sol_per_pop=sol_per_pop,
-          num_parents_mating=num_parents_mating,
-          num_genes=num_genes*num_gens_per_variable,
-          gene_space=[0, 1],
-          fitness_func=fitness_func,
-        #   init_range_low=init_range_low,
-        #   init_range_high=init_range_high,
-          mutation_num_genes=mutation_num_genes,
-          parent_selection_type=parent_selection_type,
-          crossover_type=linear_crossover,
-          mutation_type=gauss_mutation,
-          keep_elitism= 1,
-          K_tournament=3,
-          random_mutation_max_val=32.768,
-          random_mutation_min_val=-32.768,
-          logger=logger,
-          on_generation=on_generation,
-          parallel_processing=['thread', 4],
-          gene_type=int, 
-          init_range_low=0,
-          init_range_high=2,
-          save_solutions=True)
-
+start_time = time.time()
 ga_instance.run()
-
+end_time = time.time()
+print("Total lime: ", end_time - start_time)
 plots()
 
 
