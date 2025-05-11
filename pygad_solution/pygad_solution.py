@@ -4,17 +4,19 @@ import pygad
 import numpy
 import benchmark_functions as bf
 import numpy as np
+from mutations import gauss_mutation
+from crossovers import arithmetic_crossover, linear_crossover, alpha_mix_crossover, alpha_beta_mix_crossover, average_crossover
 
 #Konfiguracja algorytmu genetycznego
 
-num_genes = 2
+num_genes = 3
 func = bf.Ackley(n_dimensions=num_genes)
 def fitness_func(ga_instance, solution, solution_idx):
     fitness = func(solution)
     return 1./fitness
 
 fitness_function = fitness_func
-num_generations = 100
+num_generations = 10
 sol_per_pop = 80
 num_parents_mating = 50
 #boundary = func.suggested_bounds() #możemy wziąć stąd zakresy
@@ -62,10 +64,10 @@ ga_instance = pygad.GA(num_generations=num_generations,
           fitness_func=fitness_func,
           init_range_low=init_range_low,
           init_range_high=init_range_high,
-          mutation_num_genes=mutation_num_genes,
+          mutation_percent_genes=60,
           parent_selection_type=parent_selection_type,
-          crossover_type=crossover_type,
-          mutation_type=mutation_type,
+          crossover_type=linear_crossover,
+          mutation_type=gauss_mutation,
           keep_elitism= 1,
           K_tournament=3,
           random_mutation_max_val=32.768,
