@@ -3,18 +3,20 @@ import logging
 import pygad
 import numpy
 import benchmark_functions as bf
-import numpy as np
 from mutations import gauss_mutation
 from crossovers import arithmetic_crossover, linear_crossover, alpha_mix_crossover, alpha_beta_mix_crossover, average_crossover
 import matplotlib.pyplot as plt
 import time
+from opfunu.cec_based import F12010
+from copy import deepcopy
 
-#Konfiguracja algorytmu genetycznego
 
 num_genes = 10
-func = bf.Hypersphere(num_genes)
 
-binary_representation = True
+# func = bf.Hypersphere(num_genes)
+func = F12010(ndim=num_genes).evaluate
+
+binary_representation = False
 
 function_values = []
 mean_function_values = []
@@ -56,6 +58,11 @@ num_parents_mating = 50
 boundary = func.suggested_bounds()
 init_range_low = boundary[0][0]
 init_range_high = boundary[1][0]
+
+# for Opfun function
+# init_range_low = -10
+# init_range_high = 10
+
 mutation_num_genes = 1
 parent_selection_type = "tournament"
 
@@ -65,8 +72,6 @@ if binary_representation:
 else:
     crossover_type = linear_crossover
     mutation_type = gauss_mutation
-
-#Konfiguracja logowania
 
 level = logging.DEBUG
 name = 'logfile.txt'
@@ -112,13 +117,12 @@ def plots():
     ga_instance.best_solutions_fitness = [1. / x for x in ga_instance.best_solutions_fitness]
     ga_instance.plot_fitness()
 
-
-    plt.plot(function_values, label='Best Ackley Value')
-    plt.plot(mean_function_values, label='Mean Ackley Value')
-    plt.plot(std_function_values, label='Std Ackley Value')
+    plt.plot(function_values, label='Best Value')
+    plt.plot(mean_function_values, label='Mean Value')
+    plt.plot(std_function_values, label='Std Value')
     plt.xlabel("Generation")
     plt.ylabel("Values")
-    plt.title("Function per Generation")
+    plt.title(f"{crossover_type} - {mutation_type} - {parent_selection_type} - {num_genes}")
     plt.grid(True)
     plt.legend()
     plt.tight_layout()
@@ -144,7 +148,6 @@ def binary_simulation():
             on_generation=on_generation,
             parallel_processing=['thread', 4],
             gene_type=int, 
-            save_solutions=True,
             init_range_high=2,
             init_range_low=0,)
     
@@ -168,17 +171,47 @@ def real_simulation():
             logger=logger,
             on_generation=on_generation,
             parallel_processing=['thread', 4],
-            gene_type=float, 
-            save_solutions=True)
+            gene_type=float)
     
     return ga_instance
 
-ga_instance = real_simulation() if not binary_representation else binary_simulation()
+all_solutions = []
+all_times = []
 
-start_time = time.time()
-ga_instance.run()
-end_time = time.time()
-print("Total lime: ", end_time - start_time)
+all_function_values = []
+all_mean_function_values = []
+all_std_function_values = []
+for i in range(10):
+    ga_instance = real_simulation() if not binary_representation else binary_simulation()
+    function_values.clear()
+    mean_function_values.clear()
+    std_function_values.clear()
+
+    start_time = time.time()
+    ga_instance.run()
+    end_time = time.time()
+    print("Time: ", end_time - start_time)
+    solution, solution_fitness, solution_idx = ga_instance.best_solution()
+    all_solutions.append(1./solution_fitness)
+    all_times.append(end_time - start_time)
+
+    all_function_values.append(function_values)
+    all_mean_function_values.append(mean_function_values)
+    all_std_function_values.append(std_function_values)
+
+
+after_sort = deepcopy(all_solutions)
+all_solutions.sort()
+print("Best solution: ", all_solutions[0])
+
+best_solution_idx = after_sort.index(all_solutions[0])
+
+values = all_function_values[best_solution_idx]
+mean_values = all_mean_function_values[best_solution_idx]
+std_values = all_std_function_values[best_solution_idx]
+
+print("Average time: ", sum(all_times) / len(all_times))
+print("Average solution: ", sum(all_solutions) / len(all_solutions))
 plots()
 
 
