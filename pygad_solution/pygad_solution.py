@@ -11,6 +11,26 @@ from crossovers import arithmetic_crossover, linear_crossover, alpha_mix_crossov
 
 num_genes = 3
 func = bf.Ackley(n_dimensions=num_genes)
+
+def decode(individual, var_n, var_range):
+    '''
+    Funkcja do dekodowania osobnika z postaci binarnej na dziesiętną, ciag binarny wszystkich genów
+
+    '''
+    a, b = var_range
+    decoded = []
+    gen_length = len(individual) // var_n
+    for i in range(var_n):
+        start = i * gen_length
+        end = (i + 1) * gen_length
+        binary_chain = individual[start:end]
+        decimal_repr = int(binary_chain, 2)
+        val = a + decimal_repr * (b - a) / (2**gen_length - 1)
+        decoded.append(val)
+
+    return decoded
+
+
 def fitness_func(ga_instance, solution, solution_idx):
     fitness = func(solution)
     return 1./fitness
