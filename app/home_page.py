@@ -199,10 +199,10 @@ class HomePage(ctk.CTkFrame):
 
         except KeyError as e:
             messagebox.showerror("Brakujący parametr", e)
-        # except ValueError as e:
-        #     messagebox.showerror("Niepoprawna wartość", e)
-        # except Exception as e:
-        #     messagebox.showerror("Coś poszło nie tak", e)
+        except ValueError as e:
+            messagebox.showerror("Niepoprawna wartość", e)
+        except Exception as e:
+            messagebox.showerror("Coś poszło nie tak", e)
 
     def on_real_representation_change(self, *args):
         self.real_representation_value = not self.real_representation_value
@@ -232,3 +232,5 @@ class HomePage(ctk.CTkFrame):
 
 
         self.render()
+        self.population_config.switch_var.trace_add("write", self.on_real_representation_change)
+
