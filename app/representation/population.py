@@ -9,15 +9,16 @@ class Population:
         b: int,
         func,
         n_of_variables: int,
-        chrom_length: int,
         population_size: int,
         precision: float,
         optimization_type: Literal["min", "max"],
         best_indv_number: int,
+        chrom_length: int = None,
+        real_representation: bool = False,
     ):
         if population_size <= 0: raise ValueError(f"Liczność populacji musi być dodatnia, a nie równa {population_size}")
         if precision <= 0: raise ValueError(f"Dokładność reprezentacji chromosomu musi być dodatnia, a nie równa {precision}")
-        if chrom_length <= 0: raise ValueError(f"Długość chromosomu musi być dodatnia, a nie równa {precision}")
+        if chrom_length and chrom_length <= 0: raise ValueError(f"Długość chromosomu musi być dodatnia, a nie równa {precision}")
         if best_indv_number <= 0: raise ValueError(f"Liczba najlepszych osobników musi być dodatnia, a nie równa {precision}")
         self.a = a
         self.b = b
@@ -28,6 +29,7 @@ class Population:
         self.precission = precision
         self.optimization_type = optimization_type
         self.best_indv_number = best_indv_number
+        self.real_representation = real_representation
         self.population = self.create_population()
 
     def create_population(self):
@@ -39,6 +41,7 @@ class Population:
                 self.chrom_length,
                 self.n_of_variables,
                 self.precission,
+                real_representation=self.real_representation,
             )
             for _ in range(self.population_size)
         ]

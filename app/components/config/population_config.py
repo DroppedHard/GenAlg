@@ -37,8 +37,20 @@ class PopulationConfig(ctk.CTkFrame):
             entry.pack(pady=2, fill="x")
             self.population_entries[label] = entry
 
+        self.switch_var = ctk.StringVar(value="off")
+        self.real_rep_switch = ctk.CTkSwitch(
+            master=self,
+            text="Reprezentacja rzeczywista",
+            variable=self.switch_var,
+            onvalue="on",
+            offvalue="off"
+        )
+        self.real_rep_switch.pack(pady=5)
+
     def get_values(self):
-        return {
-            key: int(entry.get_value())
-            for key, entry in self.population_entries.items()
-        }
+        values = {}
+        for key, entry in self.population_entries.items():
+            values[key] = int(entry.get_value())
+    
+        values['Reprezentacja rzeczywista'] = self.switch_var.get()
+        return values
